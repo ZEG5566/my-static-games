@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>鲸鱼知多少 · 深海探险</title>
+<link href="https://fonts.googleapis.com/css2?family=ZCOOL+XiaoWei&family=Noto+Serif+SC:wght@400;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --abyss:#030f22;--deep:#06213d;--ocean:#0b3d6b;
+  --mid:#1565a0;--surf:#1e8bc3;--glow:#40d4ff;
+  --foam:#c8f0ff;--sun:#ffd84d;--coral:#ff7c5e;
+  --green:#3ecfa0;--white:#f0faff;--purple:#9b6dff;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;}
+body{font-family:'Noto Sans SC',sans-serif;background:var(--abyss);color:var(--white);height:100vh;overflow:hidden;}
+
+/* ── BG ── */
+#ocean-bg{position:fixed;inset:0;z-index:0;background:linear-gradient(180deg,#041728 0%,#061f38 25%,#082844 50%,#0a3259 75%,#081e36 100%);overflow:hidden;}
+.ray{position:absolute;top:-10%;width:2px;height:130%;background:linear-gradient(180deg,rgba(64,212,255,0.1),transparent);transform-origin:top center;animation:sway ease-in-out infinite;}
+@keyframes sway{0%,100%{transform:rotate(-10deg);}50%{transform:rotate(10deg);}}
+.bub{position:absolute;border-radius:50%;background:rgba(64,212,255,0.4);animation:rise linear infinite;}
+@keyframes rise{0%{transform:translateY(0);opacity:0;}15%{opacity:.7;}85%{opacity:.3;}100%{transform:translateY(-110vh);opacity:0;}}
+
+/* ── SCREENS ── */
+.screen{position:relative;z-index:10;display:none;flex-direction:column;align-items:center;height:100vh;overflow-y:auto;overflow-x:hidden;padding-bottom:2rem;}
+.screen.active{display:flex;}
+.screen::-webkit-scrollbar{width:4px;}
+.screen::-webkit-scrollbar-thumb{background:rgba(64,212,255,0.25);border-radius:2px;}
+
+/* ══════ TITLE ══════ */
+#s-title{justify-content:center;text-align:center;padding:1rem;}
+.title-whale{width:min(300px,82vw);margin:0 auto 1.2rem;animation:bob 5s ease-in-out infinite;}
+@keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-12px);}}
+.title-h1{font-family:'ZCOOL XiaoWei',serif;font-size:clamp(2.2rem,8vw,3.8rem);color:var(--glow);text-shadow:0 0 35px rgba(64,212,255,.65),0 0 70px rgba(64,212,255,.25);letter-spacing:.18em;line-height:1.15;}
+.title-sub{font-size:.88rem;color:var(--foam);opacity:.65;margin:.4rem 0 1.8rem;letter-spacing:.12em;}
+.btn-start{font-family:'ZCOOL XiaoWei',serif;font-size:1.25rem;letter-spacing:.18em;padding:.75rem 2.8rem;border-radius:3rem;border:none;background:linear-gradient(135deg,var(--surf),var(--glow));color:var(--abyss);cursor:pointer;box-shadow:0 0 28px rgba(64,212,255,.5);animation:glow-pulse 2.5s ease-in-out infinite;transition:transform .2s;}
+@keyframes glow-pulse{0%,100%{box-shadow:0 0 28px rgba(64,212,255,.5);}50%{box-shadow:0 0 50px rgba(64,212,255,.9);}}
+.btn-start:hover{transform:scale(1.05);}
+.badge-grade{display:inline-block;margin-top:.7rem;font-size:.78rem;padding:.28rem 1rem;border-radius:1rem;border:1px solid rgba(64,212,255,.25);color:var(--foam);opacity:.6;letter-spacing:.07em;}
+
+/* ══════ SHARED HEADER ══════ */
+.top-bar{width:100%;background:rgba(3,12,30,.96);padding:.6rem 1rem;display:flex;align-items:center;gap:.7rem;border-bottom:1px solid rgba(64,212,255,.12);position:sticky;top:0;z-index:30;backdrop-filter:blur(8px);}
+.btn-back{font-family:'Noto Sans SC',sans-serif;font-size:.82rem;padding:.32rem .8rem;border-radius:1rem;border:1px solid rgba(64,212,255,.28);background:rgba(64,212,255,.08);color:var(--glow);cursor:pointer;transition:.2s;}
+.btn-back:hover{background:rgba(64,212,255,.2);}
+.bar-title{font-family:'ZCOOL XiaoWei',serif;font-size:1.05rem;color:var(--glow);}
+.bar-xp{display:flex;align-items:center;gap:.45rem;margin-left:auto;}
+.xp-track{width:90px;height:7px;background:rgba(64,212,255,.12);border-radius:4px;overflow:hidden;}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--surf),var(--glow));border-radius:4px;transition:width .6s ease;}
+.xp-val{font-size:.8rem;color:var(--sun);font-weight:700;white-space:nowrap;}
+
+/* ══════ MAP ══════ */
+#s-map{padding-top:0;}
+.map-body{width:100%;max-width:700px;margin:0 auto;padding:1rem;}
+/* path connector */
+.map-path-svg{width:100%;height:60px;display:block;margin:-10px 0;}
+.map-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;}
+.map-node{background:rgba(11,61,107,.55);border:1.5px solid rgba(64,212,255,.18);border-radius:1.2rem;padding:1.1rem .9rem;text-align:center;cursor:pointer;transition:all .3s;backdrop-filter:blur(6px);position:relative;overflow:hidden;}
+.map-node::before{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 0%,rgba(64,212,255,.07),transparent 70%);}
+.map-node:hover:not(.locked){border-color:var(--glow);box-shadow:0 6px 28px rgba(64,212,255,.22);transform:translateY(-4px);}
+.map-node.locked{opacity:.4;cursor:not-allowed;filter:grayscale(.7);}
+.map-node.done{border-color:var(--green);box-shadow:0 0 16px rgba(62,207,160,.18);}
+.node-icon{font-size:2.6rem;margin-bottom:.45rem;display:block;}
+.node-label{font-family:'Noto Serif SC',serif;font-size:.92rem;font-weight:700;color:var(--glow);margin-bottom:.2rem;}
+.node-hint{font-size:.7rem;color:var(--foam);opacity:.65;line-height:1.5;}
+.node-badge{position:absolute;top:.45rem;right:.45rem;font-size:.68rem;padding:.16rem .48rem;border-radius:.45rem;font-weight:700;}
+.nb-new{background:rgba(255,216,77,.2);color:var(--sun);border:1px solid rgba(255,216,77,.4);animation:nb-blink 1.6s ease-in-out infinite;}
+@keyframes nb-blink{0%,100%{opacity:1;}50%{opacity:.45;}}
+.nb-done{background:rgba(62,207,160,.2);color:var(--green);border:1px solid rgba(62,207,160,.4);}
+.nb-lock{background:rgba(255,255,255,.07);color:var(--foam);opacity:.45;}
+.node-stars{font-size:.95rem;margin-top:.35rem;}
+/* total stars display */
+.map-total{display:flex;align-items:center;justify-content:center;gap:.5rem;margin-top:.8rem;padding:.55rem 1.2rem;background:rgba(64,212,255,.06);border:1px solid rgba(64,212,255,.15);border-radius:1rem;}
+.map-total-label{font-size:.82rem;color:var(--foam);opacity:.7;}
+.map-total-stars{font-size:1rem;color:var(--sun);}
+
+/* ══════ LESSON ══════ */
+#s-lesson{padding-top:0;}
+.slide-wrap{width:100%;max-width:680px;margin:0 auto;padding:1rem 1rem 0;}
+.slide{display:none;animation:fadeSlide .35s ease;}
+.slide.active{display:block;}
+@keyframes fadeSlide{from{opacity:0;transform:translateX(22px);}to{opacity:1;transform:translateX(0);}}
+.slide-art{width:100%;border-radius:1.3rem;overflow:hidden;border:1px solid rgba(64,212,255,.18);margin-bottom:.9rem;display:block;}
+.slide-head{font-family:'ZCOOL XiaoWei',serif;font-size:1.35rem;color:var(--glow);letter-spacing:.1em;margin-bottom:.5rem;}
+.slide-body{font-family:'Noto Serif SC',serif;font-size:.93rem;line-height:2;color:var(--foam);}
+.slide-body strong{color:var(--sun);}
+.num-tag{display:inline-block;background:rgba(64,212,255,.14);border:1px solid rgba(64,212,255,.32);border-radius:.38rem;padding:.04rem .42rem;font-weight:700;color:var(--glow);font-size:1.02em;}
+.slide-footer{display:flex;align-items:center;justify-content:space-between;padding:.9rem 0 1rem;gap:.6rem;}
+.btn-prev{font-family:'Noto Sans SC',sans-serif;font-size:.88rem;font-weight:700;padding:.55rem 1.4rem;border-radius:2rem;border:1.5px solid rgba(64,212,255,.22);background:rgba(64,212,255,.08);color:var(--foam);cursor:pointer;transition:.2s;}
+.btn-prev:hover{background:rgba(64,212,255,.18);}
+.btn-next{font-family:'Noto Sans SC',sans-serif;font-size:.88rem;font-weight:700;padding:.55rem 1.6rem;border-radius:2rem;border:none;background:linear-gradient(135deg,var(--surf),var(--glow));color:var(--abyss);cursor:pointer;box-shadow:0 3px 14px rgba(64,212,255,.38);transition:.2s;}
+.btn-next:hover{transform:scale(1.04);}
+.dots{display:flex;gap:.38rem;}
+.dot{width:7px;height:7px;border-radius:50%;background:rgba(64,212,255,.22);transition:.3s;}
+.dot.on{background:var(--glow);box-shadow:0 0 7px var(--glow);}
+
+/* ══════ VOCAB (Word-Definition Match) ══════ */
+#s-vocab{padding-top:0;}
+.vocab-body{width:100%;max-width:640px;margin:0 auto;padding:1rem;}
+.vocab-art{width:100%;border-radius:1.2rem;overflow:hidden;border:1px solid rgba(64,212,255,.15);margin-bottom:.9rem;}
+.vocab-progress{display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem;}
+.vp-label{font-size:.8rem;color:var(--foam);opacity:.65;}
+.vp-score{font-size:.85rem;color:var(--sun);font-weight:700;}
+.vocab-card{background:rgba(6,33,61,.85);border:1.5px solid rgba(64,212,255,.22);border-radius:1.15rem;padding:1.2rem 1.1rem;backdrop-filter:blur(8px);min-height:100px;margin-bottom:.85rem;}
+.vc-qnum{font-size:.73rem;color:var(--glow);opacity:.55;margin-bottom:.45rem;letter-spacing:.07em;}
+.vc-def{font-family:'Noto Serif SC',serif;font-size:1rem;line-height:1.9;color:var(--foam);}
+.vc-example{font-size:.8rem;color:var(--sun);margin-top:.45rem;line-height:1.65;font-style:italic;}
+.vocab-hint{font-size:.78rem;color:var(--foam);opacity:.55;text-align:center;margin-bottom:.55rem;}
+.word-bank{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;margin-bottom:.7rem;}
+.word-chip{font-family:'ZCOOL XiaoWei',serif;font-size:1.05rem;padding:.42rem 1rem;border-radius:2rem;border:2px solid rgba(64,212,255,.28);background:rgba(11,61,107,.6);color:var(--glow);cursor:pointer;transition:.2s;user-select:none;position:relative;}
+.word-chip:hover{border-color:var(--glow);box-shadow:0 0 14px rgba(64,212,255,.28);transform:scale(1.04);}
+.word-chip.used{opacity:.2;pointer-events:none;}
+.word-chip.shake{animation:shake .32s ease;}
+@keyframes shake{0%,100%{transform:translateX(0);}25%{transform:translateX(-5px);}75%{transform:translateX(5px);}}
+.vocab-fb{padding:.65rem 1rem;border-radius:.8rem;font-size:.87rem;line-height:1.7;display:none;margin-bottom:.4rem;}
+.vocab-fb.show{display:block;}
+.vocab-fb.ok{background:rgba(62,207,160,.1);border:1px solid rgba(62,207,160,.35);color:#b0f0da;}
+.vocab-fb.no{background:rgba(255,124,94,.1);border:1px solid rgba(255,124,94,.35);color:#ffcfc5;}
+
+/* ══════ FILL-BLANK ══════ */
+#s-fill{padding-top:0;}
+.fill-body{width:100%;max-width:640px;margin:0 auto;padding:1rem;}
+.fill-art{width:100%;border-radius:1.2rem;overflow:hidden;border:1px solid rgba(64,212,255,.15);margin-bottom:.9rem;}
+.fill-card{background:rgba(6,33,61,.85);border:1.5px solid rgba(64,212,255,.22);border-radius:1.15rem;padding:1.3rem 1.1rem;backdrop-filter:blur(8px);margin-bottom:.85rem;}
+.fc-num{font-size:.73rem;color:var(--glow);opacity:.55;margin-bottom:.45rem;letter-spacing:.07em;}
+.fc-sentence{font-family:'Noto Serif SC',serif;font-size:1rem;line-height:2.1;color:var(--foam);margin-bottom:.8rem;}
+.blank-input{background:rgba(11,61,107,.7);border:1.5px solid rgba(64,212,255,.3);border-radius:.6rem;padding:.35rem .7rem;font-family:'Noto Sans SC',sans-serif;font-size:.95rem;color:var(--white);outline:none;transition:.2s;width:7em;text-align:center;display:inline-block;vertical-align:middle;}
+.blank-input:focus{border-color:var(--glow);box-shadow:0 0 12px rgba(64,212,255,.2);}
+.blank-input.ok{border-color:var(--green);background:rgba(62,207,160,.1);color:#b0f0da;}
+.blank-input.wrong{border-color:var(--coral);background:rgba(255,124,94,.1);color:#ffcfc5;}
+.fill-bank{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.7rem;}
+.fill-chip{font-family:'ZCOOL XiaoWei',serif;font-size:1rem;padding:.38rem .9rem;border-radius:2rem;border:2px solid rgba(64,212,255,.25);background:rgba(11,61,107,.55);color:var(--glow);cursor:pointer;transition:.2s;user-select:none;}
+.fill-chip:hover{border-color:var(--glow);transform:scale(1.04);}
+.fill-chip.used{opacity:.2;pointer-events:none;text-decoration:line-through;}
+.fill-hint{font-size:.78rem;color:var(--foam);opacity:.55;text-align:center;margin-bottom:.5rem;}
+.fill-row{display:flex;gap:.6rem;align-items:center;margin-top:.7rem;}
+.btn-check{font-family:'Noto Sans SC',sans-serif;font-weight:700;font-size:.9rem;padding:.58rem 1.5rem;border-radius:.8rem;border:none;background:linear-gradient(135deg,var(--surf),var(--glow));color:var(--abyss);cursor:pointer;transition:.2s;}
+.btn-check:hover{transform:scale(1.04);}
+.fill-fb{padding:.65rem 1rem;border-radius:.8rem;font-size:.87rem;line-height:1.7;display:none;margin-top:.5rem;}
+.fill-fb.show{display:block;}
+.fill-fb.ok{background:rgba(62,207,160,.1);border:1px solid rgba(62,207,160,.35);color:#b0f0da;}
+.fill-fb.no{background:rgba(255,124,94,.1);border:1px solid rgba(255,124,94,.35);color:#ffcfc5;}
+.fill-score-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem;}
+.fill-score{font-size:.82rem;color:var(--sun);}
+.btn-skip{font-size:.78rem;padding:.28rem .85rem;border-radius:1rem;border:1px solid rgba(64,212,255,.22);background:transparent;color:var(--foam);cursor:pointer;transition:.2s;font-family:'Noto Sans SC',sans-serif;}
+.btn-skip:hover{border-color:var(--glow);color:var(--glow);}
+.btn-next-fill{display:none;font-family:'Noto Sans SC',sans-serif;font-weight:700;font-size:.88rem;padding:.55rem 1.6rem;border-radius:2rem;border:none;background:linear-gradient(135deg,var(--surf),var(--glow));color:var(--abyss);cursor:pointer;box-shadow:0 3px 14px rgba(64,212,255,.35);transition:.2s;margin-top:.7rem;}
+.btn-next-fill:hover{transform:scale(1.04);}
+.btn-next-fill.show{display:inline-block;}
+
+/* ══════ MATCH ══════ */
+#s-match{padding-top:0;}
+.match-body{width:100%;max-width:640px;margin:0 auto;padding:1rem;}
+.match-art{width:100%;border-radius:1.2rem;overflow:hidden;border:1px solid rgba(64,212,255,.15);margin-bottom:.9rem;}
+.match-stat-bar{display:flex;justify-content:space-between;align-items:center;margin-bottom:.8rem;}
+.match-stat{font-size:.82rem;color:var(--sun);}
+.btn-reset{font-size:.78rem;padding:.28rem .85rem;border-radius:1rem;border:1px solid rgba(64,212,255,.22);background:transparent;color:var(--foam);cursor:pointer;transition:.2s;font-family:'Noto Sans SC',sans-serif;}
+.btn-reset:hover{border-color:var(--glow);color:var(--glow);}
+.match-cols{display:grid;grid-template-columns:1fr 1fr;gap:.9rem;}
+.col-head{font-size:.75rem;color:var(--glow);letter-spacing:.1em;text-align:center;margin-bottom:.45rem;opacity:.65;}
+.col-items{display:flex;flex-direction:column;gap:.45rem;}
+.match-chip{font-family:'Noto Sans SC',sans-serif;font-size:.82rem;padding:.58rem .75rem;border-radius:.7rem;text-align:center;border:1.5px solid rgba(64,212,255,.18);background:rgba(11,61,107,.55);color:var(--foam);cursor:pointer;transition:.2s;line-height:1.5;user-select:none;}
+.match-chip:hover{border-color:var(--glow);color:var(--white);}
+.match-chip.sel{border-color:var(--sun);background:rgba(255,216,77,.13);color:var(--sun);}
+.match-chip.ok{border-color:var(--green);background:rgba(62,207,160,.1);color:#b0f0da;pointer-events:none;}
+.match-chip.err{border-color:var(--coral);background:rgba(255,124,94,.1);color:#ffcfc5;animation:shake .32s ease;}
+.match-fb{text-align:center;margin-top:.85rem;font-size:.9rem;min-height:1.4rem;}
+
+/* ══════ QUIZ ══════ */
+#s-quiz{padding-top:0;}
+.quiz-bar{display:flex;align-items:center;gap:.7rem;}
+.qprog-wrap{flex:1;height:7px;background:rgba(64,212,255,.12);border-radius:4px;overflow:hidden;}
+.qprog-fill{height:100%;background:linear-gradient(90deg,var(--surf),var(--glow));transition:width .5s;}
+.q-score{font-size:.82rem;color:var(--sun);font-weight:700;white-space:nowrap;}
+.quiz-body{width:100%;max-width:640px;margin:0 auto;padding:1rem;}
+.q-art{width:100%;border-radius:1.2rem;overflow:hidden;border:1px solid rgba(64,212,255,.15);margin-bottom:.9rem;display:block;}
+.q-card{background:rgba(6,33,61,.85);border:1.5px solid rgba(64,212,255,.2);border-radius:1.2rem;padding:1.3rem 1.1rem;backdrop-filter:blur(8px);}
+.q-num{font-size:.73rem;color:var(--glow);opacity:.55;margin-bottom:.5rem;letter-spacing:.07em;}
+.q-stem{font-family:'Noto Serif SC',serif;font-size:1rem;line-height:1.9;color:var(--white);margin-bottom:1rem;}
+.q-opts{display:grid;gap:.55rem;}
+.q-opt{font-family:'Noto Sans SC',sans-serif;font-size:.88rem;text-align:left;padding:.65rem .95rem;border-radius:.75rem;border:1.5px solid rgba(64,212,255,.18);background:rgba(21,101,160,.15);color:var(--foam);cursor:pointer;transition:.2s;line-height:1.55;}
+.q-opt:hover:not(:disabled){border-color:var(--glow);background:rgba(64,212,255,.13);color:var(--white);}
+.q-opt.correct{border-color:var(--green);background:rgba(62,207,160,.16);color:#b0f0da;}
+.q-opt.wrong{border-color:var(--coral);background:rgba(255,124,94,.16);color:#ffcfc5;}
+.q-opt:disabled{cursor:default;}
+.q-fb{padding:.8rem 1rem;border-radius:.8rem;font-size:.87rem;line-height:1.75;margin-top:.85rem;display:none;}
+.q-fb.show{display:block;}
+.q-fb.ok{background:rgba(62,207,160,.1);border:1px solid rgba(62,207,160,.32);color:#b0f0da;}
+.q-fb.no{background:rgba(255,124,94,.1);border:1px solid rgba(255,124,94,.32);color:#ffcfc5;}
+.btn-next-q{display:none;margin-top:.85rem;font-family:'Noto Sans SC',sans-serif;font-weight:700;font-size:.92rem;padding:.62rem 1.8rem;border-radius:2rem;border:none;background:linear-gradient(135deg,var(--surf),var(--glow));color:var(--abyss);cursor:pointer;box-shadow:0 3px 14px rgba(64,212,255,.38);transition:.2s;}
+.btn-next-q:hover{transform:scale(1.04);}
+.btn-next-q.show{display:inline-block;}
+
+/* ══════ RESULT OVERLAY ══════ */
+.overlay{display:none;position:fixed;inset:0;z-index:100;background:rgba(2,8,22,.9);backdrop-filter:blur(7px);align-items:center;justify-content:center;}
+.overlay.show{display:flex;animation:fadeIn .35s ease;}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.result-box{background:linear-gradient(160deg,var(--deep),var(--ocean));border:1.5px solid rgba(64,212,255,.32);border-radius:1.5rem;padding:2.2rem 1.8rem;text-align:center;max-width:360px;width:92%;box-shadow:0 20px 60px rgba(0,0,0,.55);animation:pop .4s cubic-bezier(.34,1.56,.64,1);}
+@keyframes pop{from{transform:scale(.7);opacity:0;}to{transform:scale(1);opacity:1;}}
+.res-whale{font-size:3.8rem;animation:bob 3s ease-in-out infinite;display:block;margin-bottom:.5rem;}
+.res-title{font-family:'ZCOOL XiaoWei',serif;font-size:1.75rem;color:var(--glow);margin-bottom:.3rem;}
+.res-pts{font-size:2.4rem;font-weight:700;color:var(--sun);margin:.3rem 0;}
+.res-stars{font-size:1.5rem;margin:.4rem 0;}
+.res-msg{font-size:.88rem;color:var(--foam);opacity:.8;margin:.5rem 0 1.4rem;line-height:1.7;}
+.res-btns{display:flex;gap:.75rem;justify-content:center;flex-wrap:wrap;}
+.btn-res-main{font-family:'Noto Sans SC',sans-serif;font-weight:700;font-size:.9rem;padding:.6rem 1.5rem;border-radius:2rem;border:none;background:linear-gradient(135deg,var(--surf),var(--glow));color:var(--abyss);cursor:pointer;box-shadow:0 3px 14px rgba(64,212,255,.38);transition:.2s;}
+.btn-res-main:hover{transform:scale(1.05);}
+.btn-res-sec{font-family:'Noto Sans SC',sans-serif;font-weight:700;font-size:.9rem;padding:.6rem 1.5rem;border-radius:2rem;border:1.5px solid rgba(64,212,255,.28);background:transparent;color:var(--foam);cursor:pointer;transition:.2s;}
+.btn-res-sec:hover{border-color:var(--glow);color:var(--glow);}
+
+/* ══════ GRAND FINALE OVERLAY ══════ */
+.finale-overlay{display:none;position:fixed;inset:0;z-index:110;background:rgba(2,5,15,.95);align-items:center;justify-content:center;flex-direction:column;text-align:center;padding:1.5rem;}
+.finale-overlay.show{display:flex;animation:fadeIn .5s ease;}
+.finale-confetti{position:absolute;inset:0;pointer-events:none;overflow:hidden;}
+.conf-piece{position:absolute;border-radius:2px;animation:conf-fall linear infinite;}
+@keyframes conf-fall{0%{transform:translateY(-20px) rotate(0deg);opacity:1;}100%{transform:translateY(110vh) rotate(720deg);opacity:0;}}
+.finale-whale{font-size:5rem;animation:bob 3s ease-in-out infinite;display:block;margin-bottom:.8rem;}
+.finale-title{font-family:'ZCOOL XiaoWei',serif;font-size:clamp(1.8rem,7vw,3rem);color:var(--glow);text-shadow:0 0 30px rgba(64,212,255,.7);letter-spacing:.15em;margin-bottom:.5rem;}
+.finale-sub{font-size:clamp(1rem,3vw,1.3rem);color:var(--sun);font-family:'Noto Serif SC',serif;margin-bottom:.8rem;}
+.finale-stars{font-size:2rem;margin:.5rem 0 1rem;letter-spacing:.2em;}
+.finale-badge{display:inline-block;padding:.6rem 2rem;border-radius:2rem;background:rgba(64,212,255,.12);border:1.5px solid rgba(64,212,255,.4);color:var(--foam);font-size:.9rem;margin-bottom:1.5rem;line-height:1.7;}
+.btn-finale-replay{font-family:'ZCOOL XiaoWei',serif;font-size:1.15rem;letter-spacing:.15em;padding:.7rem 2.5rem;border-radius:3rem;border:none;background:linear-gradient(135deg,var(--surf),var(--glow));color:var(--abyss);cursor:pointer;box-shadow:0 0 24px rgba(64,212,255,.5);transition:.2s;}
+.btn-finale-replay:hover{transform:scale(1.06);}
+
+/* ── util ── */
+.hidden{display:none!important;}
+</style>
+</head>
+<body>
+
+<div id="ocean-bg"></div>
+
+<!-- ══ TITLE ══ -->
+<div class="screen active" id="s-title">
+  <div class="title-whale">
+    <svg viewBox="0 0 300 175" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="wg" cx="40%" cy="35%" r="60%">
+          <stop offset="0%" stop-color="#1a6fbe"/>
+          <stop offset="100%" stop-color="#0c3d82"/>
+        </radialGradient>
+      </defs>
+      <!-- glow halo -->
+      <ellipse cx="150" cy="115" rx="135" ry="48" fill="rgba(64,212,255,0.06)"/>
+      <!-- spray -->
+      <g opacity="0.8">
+        <ellipse cx="95" cy="24" rx="2.5" ry="8" fill="#a8e8f8" transform="rotate(-18,95,24)"/>
+        <ellipse cx="101" cy="13" rx="2" ry="10" fill="#c8f4ff" transform="rotate(-8,101,13)"/>
+        <ellipse cx="89" cy="16" rx="2" ry="7" fill="#a8e8f8" transform="rotate(-28,89,16)"/>
+        <ellipse cx="107" cy="11" rx="1.5" ry="6" fill="#dff7ff" transform="rotate(4,107,11)"/>
+        <ellipse cx="83" cy="27" rx="1.5" ry="5" fill="#a8e8f8" transform="rotate(-38,83,27)" opacity="0.6"/>
+      </g>
+      <!-- body -->
+      <ellipse cx="152" cy="105" rx="132" ry="45" fill="url(#wg)"/>
+      <!-- belly -->
+      <ellipse cx="152" cy="122" rx="94" ry="23" fill="#c8e8f8" opacity="0.3"/>
+      <!-- highlight -->
+      <ellipse cx="132" cy="88" rx="80" ry="19" fill="#1e7fd4" opacity="0.5"/>
+      <!-- body stripe -->
+      <path d="M30 108 Q152 140 278 108" stroke="#0b3868" stroke-width="1.3" fill="none" opacity="0.5"/>
+      <!-- eye -->
+      <circle cx="36" cy="100" r="6.5" fill="#041220"/>
+      <circle cx="38" cy="97.5" r="2.5" fill="white" opacity="0.9"/>
+      <circle cx="35.5" cy="101" r="1" fill="white" opacity="0.5"/>
+      <!-- blowhole -->
+      <ellipse cx="72" cy="75" rx="4" ry="2.5" fill="#072d5e"/>
+      <!-- mouth smile -->
+      <path d="M18 110 Q35 119 52 113" stroke="#0a3a6e" stroke-width="2.3" fill="none" stroke-linecap="round"/>
+      <!-- pec fin -->
+      <path d="M100 118 Q128 155 80 152 Q66 143 100 118Z" fill="#0d4585"/>
+      <!-- dorsal hint -->
+      <path d="M178 63 Q196 53 218 62" stroke="#155090" stroke-width="1.8" fill="none" opacity="0.4"/>
+      <!-- tail -->
+      <path d="M278 92 Q310 70 314 88 Q306 104 278 100Z" fill="#0c4080"/>
+      <path d="M278 100 Q310 112 312 96 Q306 104 278 100Z" fill="#0d4585"/>
+      <!-- spots -->
+      <circle cx="188" cy="93" r="2.2" fill="#1a6fbe" opacity="0.4"/>
+      <circle cx="205" cy="104" r="1.7" fill="#1a6fbe" opacity="0.3"/>
+      <circle cx="225" cy="97" r="1.9" fill="#1a6fbe" opacity="0.35"/>
+      <!-- size bar -->
+      <line x1="22" y1="152" x2="270" y2="152" stroke="rgba(64,212,255,0.3)" stroke-width="1" stroke-dasharray="3,3"/>
+      <text x="146" y="167" text-anchor="middle" fill="rgba(64,212,255,0.6)" font-size="10" font-family="'Noto Sans SC',sans-serif">← 蓝鲸身长 30 多米 →</text>
+    </svg>
+  </div>
+  <h1 class="title-h1">鲸鱼知多少</h1>
+  <p class="title-sub">深海探险学习游戏</p>
+  <button class="btn-start" onclick="goMap()">🌊 开始探险</button>
+  <span class="badge-grade">五年级高华 · 第7课 · 生活看板</span>
+</div>
+
+<!-- ══ MAP ══ -->
+<div class="screen" id="s-map">
+  <div class="top-bar">
+    <span class="bar-title">🗺 深海探险地图</span>
+    <div class="bar-xp">
+      <div class="xp-track"><div class="xp-fill" id="xp-fill" style="width:0%"></div></div>
+      <span class="xp-val" id="xp-val">0 XP</span>
+    </div>
+  </div>
+  <div class="map-body">
+    <!-- SVG connector path -->
+    <svg class="map-path-svg" viewBox="0 0 640 60" xmlns="http://www.w3.org/2000/svg" style="margin-bottom:0;">
+      <path d="M160 10 Q320 55 480 10" stroke="rgba(64,212,255,0.18)" stroke-width="2" fill="none" stroke-dasharray="6,4"/>
+      <path d="M160 10 Q320 5 480 10" stroke="rgba(64,212,255,0.08)" stroke-width="1" fill="none"/>
+      <!-- little fish along path -->
+      <g transform="translate(240,32)" opacity="0.4">
+        <ellipse cx="0" cy="0" rx="10" ry="4" fill="#2a8fcc"/>
+        <circle cx="6" cy="-1" r="1.5" fill="#041220"/>
+      </g>
+      <g transform="translate(400,30) scale(-1,1)" opacity="0.35">
+        <ellipse cx="0" cy="0" rx="9" ry="3.5" fill="#2a8fcc"/>
+        <circle cx="5" cy="-1" r="1.3" fill="#041220"/>
+      </g>
+    </svg>
+    <div class="map-grid">
+      <div class="map-node" id="mn-lesson" onclick="if(!this.classList.contains('locked'))goLesson()">
+        <div class="node-badge nb-new" id="nb-lesson">NEW</div>
+        <span class="node-icon">📖</span>
+        <div class="node-label">鲸鱼图鉴</div>
+        <div class="node-hint">图文并茂认识鲸鱼</div>
+        <div class="node-stars" id="ns-lesson">☆☆☆</div>
+      </div>
+      <div class="map-node locked" id="mn-vocab" onclick="if(!this.classList.contains('locked'))goVocab()">
+        <div class="node-badge nb-lock" id="nb-vocab">🔒</div>
+        <span class="node-icon">🐟</span>
+        <div class="node-label">词语捕捞</div>
+        <div class="node-hint">看意思猜词语</div>
+        <div class="node-stars" id="ns-vocab">☆☆☆</div>
+      </div>
+      <div class="map-node locked" id="mn-fill" onclick="if(!this.classList.contains('locked'))goFill()">
+        <div class="node-badge nb-lock" id="nb-fill">🔒</div>
+        <span class="node-icon">✏️</span>
+        <div class="node-label">填词闯关</div>
+        <div class="node-hint">把词语填入句子</div>
+        <div class="node-stars" id="ns-fill">☆☆☆</div>
+      </div>
+      <div class="map-node locked" id="mn-match" onclick="if(!this.classList.contains('locked'))goMatch()">
+        <div class="node-badge nb-lock" id="nb-match">🔒</div>
+        <span class="node-icon">🔗</span>
+        <div class="node-label">配对深潜</div>
+        <div class="node-hint">连接词语和意思</div>
+        <div class="node-stars" id="ns-match">☆☆☆</div>
+      </div>
+      <div class="map-node locked" id="mn-quiz" onclick="if(!this.classList.contains('locked'))goQuiz()" style="grid-column:1/-1;max-width:320px;margin:0 auto;width:100%;">
+        <div class="node-badge nb-lock" id="nb-quiz">🔒</div>
+        <span class="node-icon">🎯</span>
+        <div class="node-label">智力总挑战</div>
+        <div class="node-hint">综合测试你的鲸鱼知识</div>
+        <div class="node-stars" id="ns-quiz">☆☆☆</div>
+      </div>
+    </div>
+    <div class="map-total">
+      <span class="map-total-label">总星星：</span>
+      <span class="map-total-stars" id="total-stars">☆☆☆☆☆☆☆☆☆☆☆☆☆☆☆</span>
+      <span style="font-size:.78rem;color:var(--foam);opacity:.5;" id="total-count">0 / 15</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══ LESSON ══ -->
+<div class="screen" id="s-lesson">
+  <div class="top-bar">
+    <button class="btn-back" onclick="goMap()">← 返回</button>
+    <span class="bar-title">📖 鲸鱼图鉴</span>
+    <span style="font-size:.75rem;color:var(--foam);opacity:.55;margin-left:auto;" id="slide-prog">1 / 6</span>
+  </div>
+  <div class="slide-wrap" id="slides-container">
+    <!-- slides injected by JS -->
+  </div>
+  <div style="width:100%;max-width:680px;margin:0 auto;padding:0 1rem 1rem;">
+    <div class="slide-footer">
+      <button class="btn-prev" id="btn-prev" onclick="prevSlide()" style="visibility:hidden">← 上一页</button>
+      <div class="dots" id="slide-dots"></div>
+      <button class="btn-next" id="btn-next" onclick="nextSlide()">下一页 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ VOCAB ══ -->
+<div class="screen" id="s-vocab">
+  <div class="top-bar">
+    <button class="btn-back" onclick="goMap()">← 返回</button>
+    <span class="bar-title">🐟 词语捕捞</span>
+  </div>
+  <div class="vocab-body">
+    <svg class="vocab-art" viewBox="0 0 640 100" xmlns="http://www.w3.org/2000/svg">
+      <defs><linearGradient id="vbg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#03121e"/><stop offset="100%" stop-color="#071e30"/></linearGradient></defs>
+      <rect width="640" height="100" fill="url(#vbg)"/>
+      <!-- fish swimming left-right -->
+      <g transform="translate(80,50)"><ellipse cx="0" cy="0" rx="22" ry="8" fill="#2a8fcc" opacity="0.75"/><path d="-22 0 Q-32 -8 -34 0 Q-32 8 -22 0Z" fill="#2a8fcc" opacity="0.75"/><circle cx="12" cy="-2" r="3" fill="#041220"/><circle cx="13" cy="-3" r="1" fill="white" opacity="0.7"/></g>
+      <g transform="translate(200,35) scale(.8)"><ellipse cx="0" cy="0" rx="22" ry="8" fill="#1e7abc" opacity="0.6"/><path d="-22 0 Q-32 -8 -34 0 Q-32 8 -22 0Z" fill="#1e7abc" opacity="0.6"/><circle cx="12" cy="-2" r="3" fill="#041220"/></g>
+      <g transform="translate(420,62) scale(.9) scale(-1,1)"><ellipse cx="0" cy="0" rx="22" ry="8" fill="#2a8fcc" opacity="0.65"/><path d="-22 0 Q-32 -8 -34 0 Q-32 8 -22 0Z" fill="#2a8fcc" opacity="0.65"/><circle cx="12" cy="-2" r="3" fill="#041220"/></g>
+      <g transform="translate(560,40) scale(.75) scale(-1,1)"><ellipse cx="0" cy="0" rx="22" ry="8" fill="#1a6db5" opacity="0.55"/><path d="-22 0 Q-32 -8 -34 0 Q-32 8 -22 0Z" fill="#1a6db5" opacity="0.55"/><circle cx="12" cy="-2" r="3" fill="#041220"/></g>
+      <!-- seaweed -->
+      <path d="M310 100 Q298 75 310 55 Q322 35 310 15" stroke="rgba(62,207,160,0.3)" stroke-width="3" fill="none"/>
+      <path d="M330 100 Q342 70 330 48 Q318 30 330 10" stroke="rgba(62,207,160,0.22)" stroke-width="2.5" fill="none"/>
+      <text x="320" y="92" text-anchor="middle" fill="rgba(200,240,255,0.4)" font-size="11" font-family="'Noto Sans SC',sans-serif">🐟 看词义，选词语！</text>
+    </svg>
+    <div class="vocab-progress">
+      <span class="vp-label" id="vp-label">第 1 题 / 共 10 题</span>
+      <span class="vp-score" id="vp-score">✅ 0 分</span>
+    </div>
+    <div class="vocab-card">
+      <div class="vc-qnum" id="vc-qnum"></div>
+      <div class="vc-def" id="vc-def"></div>
+      <div class="vc-example" id="vc-ex"></div>
+    </div>
+    <p class="vocab-hint">👆 点击下方词语，选出正确的答案</p>
+    <div class="word-bank" id="word-bank"></div>
+    <div class="vocab-fb" id="vocab-fb"></div>
+  </div>
+</div>
+
+<!-- ══ FILL-BLANK ══ -->
+<div class="screen" id="s-fill">
+  <div class="top-bar">
+    <button class="btn-back" onclick="goMap()">← 返回</button>
+    <span class="bar-title">✏️ 填词闯关</span>
+  </div>
+  <div class="fill-body">
+    <svg class="fill-art" viewBox="0 0 640 100" xmlns="http://www.w3.org/2000/svg">
+      <defs><linearGradient id="fbg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#03121e"/><stop offset="100%" stop-color="#071a2e"/></linearGradient></defs>
+      <rect width="640" height="100" fill="url(#fbg)"/>
+      <!-- pencil writing underwater motif -->
+      <line x1="60" y1="75" x2="580" y2="75" stroke="rgba(64,212,255,0.12)" stroke-width="1" stroke-dasharray="4,3"/>
+      <!-- whale small -->
+      <g transform="translate(320,48)">
+        <ellipse cx="0" cy="0" rx="95" ry="30" fill="#1255a0" opacity="0.8"/>
+        <ellipse cx="-70" cy="2" rx="16" ry="14" fill="#103e85"/>
+        <circle cx="-80" cy="-4" r="5.5" fill="#041220"/><circle cx="-78" cy="-6" r="2" fill="white" opacity="0.8"/>
+        <ellipse cx="-58" cy="-18" rx="3.5" ry="2" fill="#40d4ff" opacity="0.8"/>
+        <line x1="-58" y1="-20" x2="-61" y2="-34" stroke="#40d4ff" stroke-width="1.8" opacity="0.65"/>
+        <line x1="-58" y1="-20" x2="-56" y2="-36" stroke="#a8e8f8" stroke-width="1.3" opacity="0.5"/>
+        <path d="85 -8 Q104 -18 106 -5 Q100 3 85 1Z" fill="#0d4282"/>
+        <path d="85 1 Q104 10 103 1 Q100 3 85 1Z" fill="#0e4a8a"/>
+      </g>
+      <text x="320" y="92" text-anchor="middle" fill="rgba(200,240,255,0.4)" font-size="11" font-family="'Noto Sans SC',sans-serif">✏️ 选词填入句子空白处！</text>
+    </svg>
+    <div class="fill-score-row">
+      <span class="fill-score" id="fill-score-txt">得分：0 / 0</span>
+      <button class="btn-skip" onclick="fillSkip()">跳过 →</button>
+    </div>
+    <div class="fill-card">
+      <div class="fc-num" id="fc-num"></div>
+      <div class="fc-sentence" id="fc-sentence"></div>
+      <p class="fill-hint">从下方选词，点击填入空格</p>
+      <div class="fill-bank" id="fill-bank"></div>
+      <div class="fill-fb" id="fill-fb"></div>
+      <button class="btn-next-fill" id="btn-next-fill" onclick="fillNext()">下一题 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MATCH ══ -->
+<div class="screen" id="s-match">
+  <div class="top-bar">
+    <button class="btn-back" onclick="goMap()">← 返回</button>
+    <span class="bar-title">🔗 配对深潜</span>
+    <button class="btn-reset" style="margin-left:auto" onclick="initMatch()">🔄 重玩</button>
+  </div>
+  <div class="match-body">
+    <svg class="match-art" viewBox="0 0 640 105" xmlns="http://www.w3.org/2000/svg">
+      <defs><linearGradient id="mbg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#041220"/><stop offset="100%" stop-color="#071c30"/></linearGradient></defs>
+      <rect width="640" height="105" fill="url(#mbg)"/>
+      <!-- coral reef bottom -->
+      <path d="M0 85 Q40 72 80 80 Q120 88 160 78 Q200 68 240 76 Q280 84 320 74 Q360 64 400 72 Q440 80 480 70 Q520 60 560 68 Q600 76 640 66 L640 105 L0 105Z" fill="rgba(18,65,120,0.5)"/>
+      <!-- corals -->
+      <path d="M80 85 Q75 70 80 58 Q85 70 80 85Z" fill="rgba(255,124,94,0.4)" stroke="rgba(255,124,94,0.3)" stroke-width="1"/>
+      <path d="M88 85 Q93 65 88 50 Q83 65 88 85Z" fill="rgba(255,124,94,0.35)" stroke="rgba(255,124,94,0.25)" stroke-width="1"/>
+      <path d="M200 82 Q195 60 200 44" stroke="rgba(62,207,160,0.45)" stroke-width="3" fill="none"/>
+      <path d="M214 80 Q219 58 214 42" stroke="rgba(62,207,160,0.35)" stroke-width="2.5" fill="none"/>
+      <path d="M480 80 Q475 58 480 42" stroke="rgba(62,207,160,0.4)" stroke-width="3" fill="none"/>
+      <!-- connection lines hint -->
+      <line x1="160" y1="40" x2="480" y2="40" stroke="rgba(64,212,255,0.12)" stroke-width="1.5" stroke-dasharray="5,4"/>
+      <text x="320" y="33" text-anchor="middle" fill="rgba(64,212,255,0.5)" font-size="10.5" font-family="'Noto Sans SC',sans-serif">点击词语 → 再点意思 → 完成配对！</text>
+      <!-- bubbles -->
+      <circle cx="350" cy="65" r="4" fill="none" stroke="rgba(168,232,248,0.35)" stroke-width="1.2"/>
+      <circle cx="370" cy="50" r="2.5" fill="none" stroke="rgba(168,232,248,0.25)" stroke-width="1"/>
+      <circle cx="290" cy="55" r="3" fill="none" stroke="rgba(168,232,248,0.3)" stroke-width="1"/>
+    </svg>
+    <div class="match-stat-bar">
+      <span class="match-stat">✅ 配对成功：<span id="m-ok">0</span> / <span id="m-tot">0</span></span>
+      <span></span>
+    </div>
+    <div class="match-cols">
+      <div><div class="col-head">词语</div><div class="col-items" id="m-words"></div></div>
+      <div><div class="col-head">意思</div><div class="col-items" id="m-defs"></div></div>
+    </div>
+    <div class="match-fb" id="match-fb"></div>
+  </div>
+</div>
+
+<!-- ══ QUIZ ══ -->
+<div class="screen" id="s-quiz">
+  <div class="top-bar">
+    <button class="btn-back" onclick="goMap()">← 返回</button>
+    <div class="quiz-bar" style="flex:1;">
+      <div class="qprog-wrap"><div class="qprog-fill" id="qprog" style="width:0%"></div></div>
+      <span class="q-score">⭐ <span id="q-score-val">0</span></span>
+    </div>
+  </div>
+  <div class="quiz-body">
+    <div id="q-art-wrap"></div>
+    <div class="q-card">
+      <div class="q-num" id="q-num"></div>
+      <div class="q-stem" id="q-stem"></div>
+      <div class="q-opts" id="q-opts"></div>
+      <div class="q-fb" id="q-fb"></div>
+      <button class="btn-next-q" id="btn-next-q" onclick="nextQ()">下一题 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ RESULT OVERLAY ══ -->
+<div class="overlay" id="result-overlay">
+  <div class="result-box">
+    <span class="res-whale">🐋</span>
+    <div class="res-title" id="res-title"></div>
+    <div class="res-pts" id="res-pts"></div>
+    <div class="res-stars" id="res-stars"></div>
+    <div class="res-msg" id="res-msg"></div>
+    <div class="res-btns">
+      <button class="btn-res-main" id="btn-res-main"></button>
+      <button class="btn-res-sec" onclick="closeResult()">返回地图</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ GRAND FINALE ══ -->
+<div class="finale-overlay" id="finale-overlay">
+  <div class="finale-confetti" id="finale-confetti"></div>
+  <span class="finale-whale">🐋</span>
+  <div class="finale-title">🏆 深海探险完成！</div>
+  <div class="finale-sub">恭喜你集齐所有星星！</div>
+  <div class="finale-stars" id="finale-stars">⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐⭐</div>
+  <div class="finale-badge">
+    你已成为 <strong style="color:var(--glow)">鲸鱼知识专家</strong> 🎓<br>
+    五年级高华 第7课《鲸鱼知多少》<br>
+    所有词语和知识点全部掌握！
+  </div>
+  <button class="btn-finale-replay" onclick="replayAll()">🌊 再探险一次</button>
+</div>
+
+<script>
+/* ══════════════════════════════════
+   AUDIO (Web Audio API tones)
+══════════════════════════════════ */
+const AC = typeof AudioContext !== 'undefined' ? new AudioContext() : null;
+function tone(freq, dur, type='sine', vol=0.18){
+  if(!AC) return;
+  try{
+    const o=AC.createOscillator(), g=AC.createGain();
+    o.connect(g); g.connect(AC.destination);
+    o.type=type; o.frequency.value=freq;
+    g.gain.setValueAtTime(vol, AC.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, AC.currentTime+dur);
+    o.start(); o.stop(AC.currentTime+dur);
+  }catch(e){}
+}
+function sfxCorrect(){ tone(523,0.12); setTimeout(()=>tone(659,0.12),100); setTimeout(()=>tone(784,0.2),200); }
+function sfxWrong(){ tone(220,0.25,'sawtooth',0.12); }
+function sfxUnlock(){ [523,587,659,784,1047].forEach((f,i)=>setTimeout(()=>tone(f,0.18),i*80)); }
+function sfxClick(){ tone(400,0.06,'sine',0.1); }
+
+/* ══════════════════════════════════
+   OCEAN BACKGROUND
+══════════════════════════════════ */
+(function(){
+  const bg=document.getElementById('ocean-bg');
+  for(let i=0;i<14;i++){
+    const r=document.createElement('div'); r.className='ray';
+    r.style.cssText=`left:${Math.random()*100}%;animation-duration:${7+Math.random()*6}s;animation-delay:${Math.random()*8}s;opacity:${0.08+Math.random()*0.15};`;
+    bg.appendChild(r);
+  }
+  for(let i=0;i<22;i++){
+    const b=document.createElement('div'); b.className='bub';
+    const s=2+Math.random()*5;
+    b.style.cssText=`width:${s}px;height:${s}px;left:${Math.random()*100}%;bottom:${Math.random()*15}%;animation-duration:${9+Math.random()*14}s;animation-delay:${Math.random()*14}s;opacity:${0.3+Math.random()*0.4};`;
+    bg.appendChild(b);
+  }
+})();
+
+/* ══════════════════════════════════
+   STATE
+══════════════════════════════════ */
+const S = { xp:0, stars:{lesson:0,vocab:0,fill:0,match:0,quiz:0} };
+
+function addXP(n){ S.xp=Math.min(S.xp+n,500); refreshXP(); }
+function refreshXP(){
+  document.getElementById('xp-fill').style.width=(S.xp/500*100)+'%';
+  document.getElementById('xp-val').textContent=S.xp+' XP';
+}
+function setStars(key,n){
+  S.stars[key]=Math.max(S.stars[key]||0,n);
+  const map=['☆☆☆','⭐☆☆','⭐⭐☆','⭐⭐⭐'];
+  document.getElementById('ns-'+key).textContent=map[n]||'☆☆☆';
+  document.getElementById('mn-'+key).classList.add('done');
+  const nb=document.getElementById('nb-'+key);
+  nb.className='node-badge nb-done'; nb.textContent='✓';
+  refreshTotalStars();
+}
+function unlock(key){
+  const node=document.getElementById('mn-'+key);
+  if(!node.classList.contains('done')){
+    node.classList.remove('locked');
+    const nb=document.getElementById('nb-'+key);
+    nb.className='node-badge nb-new'; nb.textContent='NEW';
+    sfxUnlock();
+  }
+}
+function refreshTotalStars(){
+  const total=Object.values(S.stars).reduce((a,b)=>a+b,0);
+  const max=15;
+  let s='';
+  for(let i=0;i<total;i++) s+='⭐';
+  for(let i=total;i<max;i++) s+='☆';
+  document.getElementById('total-stars').textContent=s;
+  document.getElementById('total-count').textContent=total+' / '+max;
+  if(total>=max) setTimeout(showFinale,800);
+}
+
+/* ══════════════════════════════════
+   SCREEN NAVIGATION
+══════════════════════════════════ */
+function show(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); document.getElementById(id).classList.add('active'); sfxClick(); }
+function goMap(){ show('s-map'); }
+function goLesson(){ show('s-lesson'); currentSlide=0; renderSlides(); }
+function goVocab(){ show('s-vocab'); initVocab(); }
+function goFill(){ show('s-fill'); initFill(); }
+function goMatch(){ show('s-match'); initMatch(); }
+function goQuiz(){ show('s-quiz'); initQuiz(); }
+
+/* ══════════════════════════════════
+   LESSON DATA + RENDER
+══════════════════════════════════ */
+const slides=[
+  {
+    title:'🔬 鲸鱼不是鱼！',
+    body:'鲸鱼生活在海洋里，但它<strong>不是鱼</strong>，而是<strong>哺乳动物</strong>（bǔ rǔ dòng wù）。哺乳动物用<strong>肺</strong>呼吸，会用<strong>乳汁</strong>哺育幼崽。',
+    svg:`<svg viewBox="0 0 640 195" xmlns="http://www.w3.org/2000/svg">
+<defs><linearGradient id="L1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#041420"/><stop offset="100%" stop-color="#082444"/></linearGradient></defs>
+<rect width="640" height="195" fill="url(#L1)"/>
+<!-- Regular fish on left (WRONG) -->
+<g transform="translate(110,100)">
+  <ellipse cx="0" cy="0" rx="38" ry="15" fill="#2a8fcc"/>
+  <path d="M-38 0 Q-54 -14 -57 0 Q-54 14 -38 0Z" fill="#2a8fcc"/>
+  <ellipse cx="22" cy="-4" rx="4" ry="4" fill="#041220"/>
+  <ellipse cx="23" cy="-5" rx="1.5" ry="1.5" fill="white" opacity=".8"/>
+  <path d="M-30 8 Q-10 15 10 10" stroke="#1a6fa8" stroke-width="1.2" fill="none" opacity=".5"/>
+  <text x="0" y="30" text-anchor="middle" fill="rgba(200,230,255,0.6)" font-size="12" font-family="'Noto Sans SC',sans-serif">普通的鱼</text>
+  <text x="0" y="-28" fill="#ff6b6b" font-size="10" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">用鳃呼吸 ✕</text>
+</g>
+<!-- X -->
+<text x="190" y="108" fill="#ff6b6b" font-size="32" font-weight="bold" opacity=".9">✕</text>
+<!-- VS -->
+<text x="235" y="105" fill="rgba(200,230,255,0.35)" font-size="14" font-family="'Noto Sans SC',sans-serif">VS</text>
+<!-- Whale on right (CORRECT) -->
+<g transform="translate(440,95)">
+  <ellipse cx="0" cy="0" rx="145" ry="50" fill="#1255a0"/>
+  <ellipse cx="-20" cy="-15" rx="92" ry="22" fill="#1a6fbe" opacity=".5"/>
+  <ellipse cx="0" cy="17" rx="105" ry="26" fill="#c8e8f8" opacity=".28"/>
+  <ellipse cx="-110" cy="2" rx="20" ry="18" fill="#103e85"/>
+  <circle cx="-122" cy="-6" r="7" fill="#041220"/>
+  <circle cx="-120" cy="-8" r="2.5" fill="white" opacity=".85"/>
+  <ellipse cx="-93" cy="-32" rx="5" ry="3" fill="#083060"/>
+  <!-- spray -->
+  <line x1="-93" y1="-35" x2="-98" y2="-62" stroke="#40d4ff" stroke-width="3" opacity=".8"/>
+  <line x1="-93" y1="-35" x2="-91" y2="-66" stroke="#a8e8f8" stroke-width="2" opacity=".7"/>
+  <line x1="-93" y1="-35" x2="-86" y2="-60" stroke="#40d4ff" stroke-width="1.5" opacity=".55"/>
+  <path d="-15 22 Q18 60 -35 57 Q-55 47 -15 22Z" fill="#0e4a8a"/>
+  <path d="130 -14 Q162 -32 166 -10 Q157 5 130 2Z" fill="#0d4282"/>
+  <path d="130 2 Q162 18 160 2 Q157 5 130 2Z" fill="#0e4a8a"/>
+  <text x="0" y="-60" fill="#40d4ff" font-size="11" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">用肺呼吸 ✓</text>
+  <text x="0" y="38" text-anchor="middle" fill="rgba(200,230,255,0.6)" font-size="12" font-family="'Noto Sans SC',sans-serif">鲸鱼（哺乳动物）</text>
+</g>
+<!-- right panel -->
+<rect x="20" y="140" width="200" height="46" rx="10" fill="rgba(18,85,160,0.35)" stroke="rgba(64,212,255,0.2)" stroke-width="1"/>
+<text x="120" y="158" fill="#ffd84d" font-size="12" font-family="'Noto Sans SC',sans-serif" text-anchor="middle" font-weight="bold">哺乳动物特征</text>
+<text x="120" y="174" fill="#40d4ff" font-size="10.5" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">✦ 肺呼吸  ✦ 温血  ✦ 喂母乳</text>
+</svg>`
+  },
+  {
+    title:'💨 头顶喷水柱！',
+    body:'鲸鱼的<strong>鼻孔</strong>长在<strong>头顶</strong>上。每隔 <span class="num-tag">10 分钟</span> 就浮出水面呼吸。呼气时喷出的<strong>水柱</strong>高达 <span class="num-tag">10 米</span>，就像一座喷泉！',
+    svg:`<svg viewBox="0 0 640 195" xmlns="http://www.w3.org/2000/svg">
+<defs><linearGradient id="L2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#030e1e"/><stop offset="45%" stop-color="#082e50"/><stop offset="100%" stop-color="#061d38"/></linearGradient></defs>
+<rect width="640" height="195" fill="url(#L2)"/>
+<!-- water surface -->
+<path d="M0 82 Q80 74 160 82 Q240 90 320 82 Q400 74 480 82 Q560 90 640 82" stroke="rgba(64,212,255,0.5)" stroke-width="2" fill="none"/>
+<rect x="0" y="82" width="640" height="113" fill="rgba(8,36,72,0.35)"/>
+<text x="608" y="76" fill="rgba(200,240,255,0.45)" font-size="10" font-family="'Noto Sans SC',sans-serif">水面</text>
+<!-- water column -->
+<g transform="translate(310,80)">
+  <path d="M-7 0 Q-5 -45 -6 -95 Q-3 -88 0 -105 Q3 -88 6 -95 Q7 -45 7 0Z" fill="rgba(168,232,248,0.48)"/>
+  <ellipse cx="-14" cy="-95" rx="4.5" ry="8" fill="rgba(200,245,255,0.58)" transform="rotate(-28,-14,-95)"/>
+  <ellipse cx="13" cy="-93" rx="4" ry="7" fill="rgba(200,245,255,0.52)" transform="rotate(22,13,-93)"/>
+  <ellipse cx="-6" cy="-107" rx="3.5" ry="6" fill="rgba(200,245,255,0.5)" transform="rotate(-10,-6,-107)"/>
+  <ellipse cx="5" cy="-110" rx="3" ry="5.5" fill="rgba(200,245,255,0.58)" transform="rotate(14,5,-110)"/>
+  <ellipse cx="21" cy="-100" rx="2.5" ry="4.5" fill="rgba(200,245,255,0.38)" transform="rotate(32,21,-100)"/>
+  <!-- height measurement -->
+  <line x1="28" y1="0" x2="28" y2="-105" stroke="rgba(255,216,77,0.65)" stroke-width="1.5" stroke-dasharray="3,3"/>
+  <polygon points="28,-105 24,-93 32,-93" fill="rgba(255,216,77,0.65)"/>
+  <polygon points="28,0 24,-12 32,-12" fill="rgba(255,216,77,0.65)"/>
+  <text x="42" y="-48" fill="#ffd84d" font-size="14" font-family="'Noto Sans SC',sans-serif" font-weight="bold">10 米</text>
+</g>
+<!-- whale body below surface -->
+<g transform="translate(310,155)">
+  <ellipse cx="0" cy="0" rx="140" ry="40" fill="#1255a0"/>
+  <ellipse cx="-18" cy="-13" rx="88" ry="18" fill="#1a6fbe" opacity=".5"/>
+  <ellipse cx="0" cy="16" rx="100" ry="22" fill="#c8e8f8" opacity=".27"/>
+  <ellipse cx="-106" cy="2" rx="18" ry="16" fill="#103e85"/>
+  <circle cx="-117" cy="-5" r="6.5" fill="#041220"/>
+  <circle cx="-115" cy="-7" r="2.2" fill="white" opacity=".8"/>
+  <ellipse cx="-86" cy="-28" rx="4.5" ry="2.8" fill="#40d4ff" opacity=".85"/>
+  <path d="-12 20 Q22 54 -35 51 Q-54 42 -12 20Z" fill="#0e4a8a"/>
+  <path d="128 -12 Q158 -30 161 -8 Q153 5 128 2Z" fill="#0d4282"/>
+  <path d="128 2 Q158 16 156 2 Q153 5 128 2Z" fill="#0e4a8a"/>
+  <text x="0" y="-44" fill="rgba(200,230,255,0.7)" font-size="11" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">每隔 10 分钟浮出呼吸</text>
+</g>
+<!-- timer badge -->
+<rect x="20" y="140" width="130" height="42" rx="10" fill="rgba(18,85,160,0.4)" stroke="rgba(64,212,255,0.22)" stroke-width="1"/>
+<text x="85" y="158" fill="#ffd84d" font-size="11" font-family="'Noto Sans SC',sans-serif" text-anchor="middle" font-weight="bold">⏱ 每 10 分钟</text>
+<text x="85" y="174" fill="#c8f0ff" font-size="10.5" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">浮出水面呼吸一次</text>
+</svg>`
+  },
+  {
+    title:'🧈 神奇的脂肪层',
+    body:'鲸鱼皮肤下有一层<strong>厚厚的脂肪</strong>（zhī fáng），<strong>既可以保温</strong>——让身体在冷海水里保持温度；<strong>又可以</strong>让身体比较容易<strong>浮出水面</strong>。',
+    svg:`<svg viewBox="0 0 640 195" xmlns="http://www.w3.org/2000/svg">
+<defs><linearGradient id="L3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#03121e"/><stop offset="100%" stop-color="#071e38"/></linearGradient></defs>
+<rect width="640" height="195" fill="url(#L3)"/>
+<!-- cross section whale -->
+<g transform="translate(210,100)">
+  <ellipse cx="0" cy="0" rx="100" ry="78" fill="#1255a0"/>
+  <ellipse cx="0" cy="0" rx="82" ry="62" fill="#2178b8" opacity=".85"/>
+  <ellipse cx="0" cy="0" rx="58" ry="44" fill="#0d4882"/>
+  <ellipse cx="0" cy="0" rx="32" ry="26" fill="#082840" opacity=".8"/>
+  <!-- labels -->
+  <line x1="100" y1="0" x2="148" y2="-22" stroke="rgba(200,230,255,.4)" stroke-width="1.2"/>
+  <text x="154" y="-25" fill="rgba(200,240,255,.85)" font-size="12" font-family="'Noto Sans SC',sans-serif">外皮</text>
+  <line x1="82" y1="25" x2="130" y2="45" stroke="rgba(255,216,77,.7)" stroke-width="1.5"/>
+  <text x="137" y="48" fill="#ffd84d" font-size="13" font-family="'Noto Sans SC',sans-serif" font-weight="bold">脂肪层</text>
+  <line x1="0" y1="44" x2="0" y2="78" stroke="rgba(64,212,255,.5)" stroke-width="1.2"/>
+  <text x="-12" y="90" fill="rgba(64,212,255,.8)" font-size="11" font-family="'Noto Sans SC',sans-serif">内部</text>
+  <text x="0" y="115" text-anchor="middle" fill="rgba(200,230,255,.45)" font-size="10" font-family="'Noto Sans SC',sans-serif">（横截面）</text>
+</g>
+<!-- effect boxes right -->
+<rect x="390" y="30" width="225" height="55" rx="12" fill="rgba(18,85,160,0.42)" stroke="rgba(64,212,255,.22)" stroke-width="1"/>
+<text x="502" y="53" fill="#ffd84d" font-size="12.5" font-family="'Noto Sans SC',sans-serif" text-anchor="middle" font-weight="bold">🌡 作用①：保温</text>
+<text x="502" y="72" fill="#c8f0ff" font-size="11" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">在冰冷海水里维持体温</text>
+<rect x="390" y="100" width="225" height="55" rx="12" fill="rgba(18,85,160,0.42)" stroke="rgba(64,212,255,.22)" stroke-width="1"/>
+<text x="502" y="123" fill="#ffd84d" font-size="12.5" font-family="'Noto Sans SC',sans-serif" text-anchor="middle" font-weight="bold">🌊 作用②：助浮</text>
+<text x="502" y="142" fill="#c8f0ff" font-size="11" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">让身体容易浮出水面</text>
+<!-- "既…又…" structure note -->
+<rect x="390" y="165" width="225" height="24" rx="8" fill="rgba(64,212,255,.08)" stroke="rgba(64,212,255,.15)" stroke-width="1"/>
+<text x="502" y="181" fill="rgba(64,212,255,.7)" font-size="10.5" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">关联词：既……又……</text>
+<!-- cold temp marks -->
+<text x="40" y="55" fill="rgba(168,232,248,0.5)" font-size="30" font-family="serif">❄</text>
+<text x="40" y="90" fill="rgba(168,232,248,0.35)" font-size="22" font-family="serif">❄</text>
+<text x="55" y="130" fill="rgba(168,232,248,0.25)" font-size="18" font-family="serif">❄</text>
+</svg>`
+  },
+  {
+    title:'📏 世界最大！蓝鲸',
+    body:'蓝鲸是世界上<strong>最大</strong>的动物！身体长 <span class="num-tag">30 多米</span>，体重<strong>超过</strong> <span class="num-tag">13 万公斤</span>，相当于 <span class="num-tag">26 头大象</span> 那么重！',
+    svg:`<svg viewBox="0 0 640 195" xmlns="http://www.w3.org/2000/svg">
+<defs><linearGradient id="L4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#020c1c"/><stop offset="100%" stop-color="#061a30"/></linearGradient></defs>
+<rect width="640" height="195" fill="url(#L4)"/>
+<!-- huge blue whale -->
+<g transform="translate(320,88)">
+  <ellipse cx="0" cy="10" rx="260" ry="55" fill="#0f4d9a"/>
+  <ellipse cx="-25" cy="-12" rx="168" ry="28" fill="#1a6fbe" opacity=".48"/>
+  <ellipse cx="0" cy="30" rx="195" ry="30" fill="#c8e8f8" opacity=".26"/>
+  <ellipse cx="-205" cy="12" rx="28" ry="24" fill="#103e85"/>
+  <circle cx="-220" cy="3" r="11" fill="#041220"/>
+  <circle cx="-217" cy="0" r="4" fill="white" opacity=".8"/>
+  <path d="-245 18 Q-230 28 -212 21" stroke="#0a3a6e" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+  <ellipse cx="-175" cy="-38" rx="6" ry="3.5" fill="#083060"/>
+  <line x1="-175" y1="-42" x2="-180" y2="-58" stroke="#40d4ff" stroke-width="2.5" opacity=".7"/>
+  <line x1="-175" y1="-42" x2="-172" y2="-62" stroke="#a8e8f8" stroke-width="2" opacity=".6"/>
+  <line x1="-175" y1="-42" x2="-166" y2="-56" stroke="#40d4ff" stroke-width="1.5" opacity=".5"/>
+  <path d="-32 38 Q12 82 -55 78 Q-74 68 -32 38Z" fill="#0e4a8a"/>
+  <path d="242 -14 Q278 -36 282 -12 Q272 5 242 3Z" fill="#0c4080"/>
+  <path d="242 3 Q278 22 276 4 Q272 5 242 3Z" fill="#0d4585"/>
+  <line x1="-242" y1="66" x2="242" y2="66" stroke="rgba(255,216,77,0.6)" stroke-width="1.5" stroke-dasharray="5,3"/>
+  <polygon points="-242,66 -230,62 -230,70" fill="rgba(255,216,77,0.6)"/>
+  <polygon points="242,66 230,62 230,70" fill="rgba(255,216,77,0.6)"/>
+  <text x="0" y="82" fill="#ffd84d" font-size="15" font-family="'Noto Sans SC',sans-serif" text-anchor="middle" font-weight="bold">30 多米</text>
+</g>
+<!-- elephant comparison bottom left -->
+<g transform="translate(18,148)">
+  <text x="0" y="0" fill="rgba(200,230,255,0.75)" font-size="10.5" font-family="'Noto Sans SC',sans-serif">重量 = 26 头大象</text>
+  <text x="2" y="20" font-size="15">🐘🐘🐘🐘🐘🐘🐘🐘🐘🐘🐘🐘🐘</text>
+  <text x="2" y="40" font-size="15">🐘🐘🐘🐘🐘🐘🐘🐘🐘🐘🐘🐘🐘</text>
+</g>
+<!-- weight badge top right -->
+<rect x="490" y="148" width="140" height="40" rx="10" fill="rgba(18,85,160,0.45)" stroke="rgba(255,216,77,.35)" stroke-width="1"/>
+<text x="560" y="165" fill="#ffd84d" font-size="11" font-family="'Noto Sans SC',sans-serif" text-anchor="middle" font-weight="bold">体重超过</text>
+<text x="560" y="181" fill="#40d4ff" font-size="13" font-family="'Noto Sans SC',sans-serif" text-anchor="middle" font-weight="bold">13 万公斤</text>
+</svg>`
+  },
+  {
+    title:'👅 超级大嘴巴',
+    body:'蓝鲸的嘴巴非常大，它的<strong>舌头</strong>上竟然能站 <span class="num-tag">50 多个人</span>！想象一下，这有多大？',
+    svg:`<svg viewBox="0 0 640 195" xmlns="http://www.w3.org/2000/svg">
+<defs><linearGradient id="L5" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#020c1a"/><stop offset="100%" stop-color="#050e22"/></linearGradient></defs>
+<rect width="640" height="195" fill="url(#L5)"/>
+<g transform="translate(270,100)">
+  <!-- outer jaw -->
+  <path d="M-155,-55 Q-175,5 -155,62 Q-82,92 88,72 Q186,52 206,10 Q186,-30 88,-68 Q-82,-90 -155,-55Z" fill="#0f4d9a"/>
+  <!-- upper inner -->
+  <path d="M-135,-38 Q-68,-60 78,-46 Q158,-25 175,10 Q158,42 78,54 Q-68,64 -135,40 Q-162,14 -135,-38Z" fill="#041220"/>
+  <!-- tongue -->
+  <path d="M-110,32 Q0,64 108,42 Q85,58 0,72 Q-85,58 -110,32Z" fill="#2a0e52" opacity=".9"/>
+  <path d="M-98,34 Q0,65 96,44" stroke="#3a1870" stroke-width="2" fill="none" opacity=".6"/>
+  <!-- people on tongue - rows -->
+  <g fill="#c8e8f8" opacity=".9">
+    <rect x="-88" y="26" width="4" height="13" rx="2"/><circle cx="-86" cy="23" r="3.5"/>
+    <rect x="-68" y="30" width="4" height="13" rx="2"/><circle cx="-66" cy="27" r="3.5"/>
+    <rect x="-48" y="33" width="4" height="13" rx="2"/><circle cx="-46" cy="30" r="3.5"/>
+    <rect x="-28" y="36" width="4" height="13" rx="2"/><circle cx="-26" cy="33" r="3.5"/>
+    <rect x="-8" y="38" width="4" height="13" rx="2"/><circle cx="-6" cy="35" r="3.5"/>
+    <rect x="12" y="37" width="4" height="13" rx="2"/><circle cx="14" cy="34" r="3.5"/>
+    <rect x="32" y="35" width="4" height="13" rx="2"/><circle cx="34" cy="32" r="3.5"/>
+    <rect x="52" y="32" width="4" height="13" rx="2"/><circle cx="54" cy="29" r="3.5"/>
+    <rect x="72" y="28" width="4" height="13" rx="2"/><circle cx="74" cy="25" r="3.5"/>
+  </g>
+  <g fill="#c8e8f8" opacity=".62">
+    <rect x="-78" y="18" width="3.5" height="11" rx="1.5"/><circle cx="-76.5" cy="15.5" r="3"/>
+    <rect x="-58" y="22" width="3.5" height="11" rx="1.5"/><circle cx="-56.5" cy="19.5" r="3"/>
+    <rect x="-38" y="25" width="3.5" height="11" rx="1.5"/><circle cx="-36.5" cy="22.5" r="3"/>
+    <rect x="-18" y="28" width="3.5" height="11" rx="1.5"/><circle cx="-16.5" cy="25.5" r="3"/>
+    <rect x="2" y="29" width="3.5" height="11" rx="1.5"/><circle cx="3.5" cy="26.5" r="3"/>
+    <rect x="22" y="28" width="3.5" height="11" rx="1.5"/><circle cx="23.5" cy="25.5" r="3"/>
+    <rect x="42" y="26" width="3.5" height="11" rx="1.5"/><circle cx="43.5" cy="23.5" r="3"/>
+    <rect x="62" y="23" width="3.5" height="11" rx="1.5"/><circle cx="63.5" cy="20.5" r="3"/>
+  </g>
+  <text x="0" y="-60" fill="#ffd84d" font-size="16" font-family="'Noto Sans SC',sans-serif" text-anchor="middle" font-weight="bold">50 多人！</text>
+</g>
+<!-- info right -->
+<rect x="512" y="60" width="120" height="72" rx="12" fill="rgba(18,85,160,0.42)" stroke="rgba(64,212,255,.2)" stroke-width="1"/>
+<text x="572" y="84" fill="#ffd84d" font-size="11.5" font-family="'Noto Sans SC',sans-serif" text-anchor="middle" font-weight="bold">蓝鲸的舌头</text>
+<text x="572" y="102" fill="#c8f0ff" font-size="11" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">长约 6-8 米</text>
+<text x="572" y="120" fill="#c8f0ff" font-size="11" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">重约 2.7 吨</text>
+</svg>`
+  },
+  {
+    title:'😴 奇特的睡觉方式',
+    body:'鲸鱼大多生活在<strong>深海</strong>，有时也去<strong>浅海</strong>活动。有些鲸鱼睡觉时，会聚在一起，<strong>头朝上、尾巴朝下</strong>，围成一圈，就像一朵花一样！',
+    svg:`<svg viewBox="0 0 640 195" xmlns="http://www.w3.org/2000/svg">
+<defs><linearGradient id="L6" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#02081a"/><stop offset="100%" stop-color="#040c1e"/></linearGradient></defs>
+<rect width="640" height="195" fill="url(#L6)"/>
+<!-- stars / plankton -->
+<circle cx="35" cy="28" r="1.5" fill="rgba(168,232,248,.4)"/>
+<circle cx="95" cy="55" r="1" fill="rgba(168,232,248,.3)"/>
+<circle cx="600" cy="35" r="1.5" fill="rgba(168,232,248,.4)"/>
+<circle cx="555" cy="70" r="1" fill="rgba(168,232,248,.25)"/>
+<circle cx="580" cy="150" r="1.2" fill="rgba(168,232,248,.3)"/>
+<circle cx="60" cy="140" r="1" fill="rgba(168,232,248,.25)"/>
+<!-- circle of sleeping whales -->
+<g transform="translate(320,98)">
+  <circle cx="0" cy="0" r="75" fill="none" stroke="rgba(64,212,255,0.12)" stroke-width="1.5" stroke-dasharray="5,4"/>
+  <!-- 6 whales, head up tail down -->
+  <g transform="rotate(0) translate(0,-62)">
+    <ellipse cx="0" cy="0" rx="10" ry="32" fill="#1255a0"/>
+    <ellipse cx="0" cy="-18" rx="8" ry="10" fill="#103e85"/>
+    <circle cx="-3" cy="-22" r="4" fill="#041220"/><circle cx="-2" cy="-24" r="1.5" fill="white" opacity=".8"/>
+    <path d="-8 22 Q-18 36 -12 40 Q0 44 12 40 Q18 36 8 22Z" fill="#0d4282"/>
+  </g>
+  <g transform="rotate(60) translate(0,-62)">
+    <ellipse cx="0" cy="0" rx="10" ry="32" fill="#1255a0"/>
+    <ellipse cx="0" cy="-18" rx="8" ry="10" fill="#103e85"/>
+    <circle cx="-3" cy="-22" r="4" fill="#041220"/><circle cx="-2" cy="-24" r="1.5" fill="white" opacity=".8"/>
+    <path d="-8 22 Q-18 36 -12 40 Q0 44 12 40 Q18 36 8 22Z" fill="#0d4282"/>
+  </g>
+  <g transform="rotate(120) translate(0,-62)">
+    <ellipse cx="0" cy="0" rx="10" ry="32" fill="#1255a0"/>
+    <ellipse cx="0" cy="-18" rx="8" ry="10" fill="#103e85"/>
+    <circle cx="-3" cy="-22" r="4" fill="#041220"/><circle cx="-2" cy="-24" r="1.5" fill="white" opacity=".8"/>
+    <path d="-8 22 Q-18 36 -12 40 Q0 44 12 40 Q18 36 8 22Z" fill="#0d4282"/>
+  </g>
+  <g transform="rotate(180) translate(0,-62)">
+    <ellipse cx="0" cy="0" rx="10" ry="32" fill="#1255a0"/>
+    <ellipse cx="0" cy="-18" rx="8" ry="10" fill="#103e85"/>
+    <circle cx="-3" cy="-22" r="4" fill="#041220"/><circle cx="-2" cy="-24" r="1.5" fill="white" opacity=".8"/>
+    <path d="-8 22 Q-18 36 -12 40 Q0 44 12 40 Q18 36 8 22Z" fill="#0d4282"/>
+  </g>
+  <g transform="rotate(240) translate(0,-62)">
+    <ellipse cx="0" cy="0" rx="10" ry="32" fill="#1255a0"/>
+    <ellipse cx="0" cy="-18" rx="8" ry="10" fill="#103e85"/>
+    <circle cx="-3" cy="-22" r="4" fill="#041220"/><circle cx="-2" cy="-24" r="1.5" fill="white" opacity=".8"/>
+    <path d="-8 22 Q-18 36 -12 40 Q0 44 12 40 Q18 36 8 22Z" fill="#0d4282"/>
+  </g>
+  <g transform="rotate(300) translate(0,-62)">
+    <ellipse cx="0" cy="0" rx="10" ry="32" fill="#1255a0"/>
+    <ellipse cx="0" cy="-18" rx="8" ry="10" fill="#103e85"/>
+    <circle cx="-3" cy="-22" r="4" fill="#041220"/><circle cx="-2" cy="-24" r="1.5" fill="white" opacity=".8"/>
+    <path d="-8 22 Q-18 36 -12 40 Q0 44 12 40 Q18 36 8 22Z" fill="#0d4282"/>
+  </g>
+  <!-- ZZZ center -->
+  <text x="0" y="8" fill="rgba(168,232,248,0.5)" font-size="20" text-anchor="middle" font-family="serif">Zzz</text>
+</g>
+<!-- labels -->
+<text x="320" y="188" fill="rgba(200,230,255,0.6)" font-size="11.5" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">头朝上 · 尾巴朝下 · 围成一圈</text>
+<!-- depth boxes -->
+<rect x="14" y="68" width="78" height="44" rx="8" fill="rgba(18,55,110,0.45)" stroke="rgba(64,212,255,.15)" stroke-width="1"/>
+<text x="53" y="87" fill="rgba(64,212,255,.8)" font-size="11" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">深海</text>
+<text x="53" y="104" fill="rgba(200,230,255,.55)" font-size="10" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">光线很少</text>
+<rect x="548" y="68" width="78" height="44" rx="8" fill="rgba(18,55,110,0.38)" stroke="rgba(64,212,255,.12)" stroke-width="1"/>
+<text x="587" y="87" fill="rgba(64,212,255,.75)" font-size="11" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">浅海</text>
+<text x="587" y="104" fill="rgba(200,230,255,.5)" font-size="10" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">靠近海岸</text>
+</svg>`
+  }
+];
+
+let currentSlide=0;
+function renderSlides(){
+  const con=document.getElementById('slides-container');
+  con.innerHTML='';
+  slides.forEach((s,i)=>{
+    const div=document.createElement('div');
+    div.className='slide'+(i===0?' active':'');
+    div.id='slide-'+i;
+    div.innerHTML=`<img class="slide-art" src="data:image/svg+xml;charset=utf-8,${encodeURIComponent(s.svg)}" alt=""/>
+<div class="slide-head">${s.title}</div>
+<div class="slide-body">${s.body}</div>`;
+    con.appendChild(div);
+  });
+  buildDots(); updateSlideNav();
+}
+function buildDots(){
+  const d=document.getElementById('slide-dots'); d.innerHTML='';
+  slides.forEach((_,i)=>{
+    const dot=document.createElement('div');
+    dot.className='dot'+(i===currentSlide?' on':'');
+    d.appendChild(dot);
+  });
+}
+function updateSlideNav(){
+  document.getElementById('slide-prog').textContent=(currentSlide+1)+' / '+slides.length;
+  document.getElementById('btn-prev').style.visibility=currentSlide===0?'hidden':'visible';
+  document.getElementById('btn-next').textContent=currentSlide===slides.length-1?'完成 ✓':'下一页 →';
+  buildDots();
+}
+function nextSlide(){
+  sfxClick();
+  if(currentSlide<slides.length-1){
+    document.getElementById('slide-'+currentSlide).classList.remove('active');
+    currentSlide++;
+    document.getElementById('slide-'+currentSlide).classList.add('active');
+    updateSlideNav();
+  } else {
+    addXP(50); setStars('lesson',3);
+    unlock('vocab');
+    showResult('📖 图鉴完成！','+ 50 XP','⭐⭐⭐','太棒了！你已认识鲸鱼所有知识！','去学词语 🐟',()=>{closeResult();goVocab();});
+  }
+}
+function prevSlide(){
+  sfxClick();
+  if(currentSlide>0){
+    document.getElementById('slide-'+currentSlide).classList.remove('active');
+    currentSlide--;
+    document.getElementById('slide-'+currentSlide).classList.add('active');
+    updateSlideNav();
+  }
+}
+
+/* ══════════════════════════════════
+   VOCAB GAME
+══════════════════════════════════ */
+const vocabData=[
+  {word:'哺乳动物',def:'一类需要用肺呼吸、以乳汁哺育幼崽的动物',ex:'例：猫、狗和鲸鱼都是哺乳动物。'},
+  {word:'鼻孔',def:'鼻子上的小孔，用来呼吸和闻气味',ex:'例：鲸鱼的鼻孔长在头顶上。'},
+  {word:'水柱',def:'细长、竖直的水流，形状像柱子',ex:'例：鲸鱼喷出的水柱高达10米。'},
+  {word:'脂肪',def:'动物体内储存能量的软厚物质',ex:'例：鲸鱼皮肤下有厚厚的脂肪层。'},
+  {word:'保温',def:'保持温度，不让热量散失',ex:'例：脂肪层可以帮助鲸鱼保温。'},
+  {word:'超过',def:'比某个数量或标准更多',ex:'例：蓝鲸的体重超过13万公斤。'},
+  {word:'深海',def:'海洋中光线很少、水压很大的深处',ex:'例：鲸鱼大多生活在深海。'},
+  {word:'浅海',def:'靠近海岸、较浅的海域',ex:'例：有时鲸鱼也会到浅海活动。'},
+  {word:'浮出水面',def:'从水里升上来，露出水面',ex:'例：鲸鱼每隔10分钟浮出水面呼吸。'},
+  {word:'哺育',def:'喂养，养育（幼崽）',ex:'例：鲸鱼妈妈会用乳汁哺育幼崽。'},
+];
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+
+let vQueue=[],vIdx=0,vCorrect=0,vAnswered=false;
+function initVocab(){
+  vQueue=shuffle([...vocabData]); vIdx=0; vCorrect=0; vAnswered=false;
+  loadVQ();
+}
+function loadVQ(){
+  if(vIdx>=vQueue.length){endVocab();return;}
+  vAnswered=false;
+  const q=vQueue[vIdx];
+  document.getElementById('vp-label').textContent='第 '+(vIdx+1)+' 题 / 共 '+vQueue.length+' 题';
+  document.getElementById('vp-score').textContent='✅ '+vCorrect+' 分';
+  document.getElementById('vc-qnum').textContent='请选出与下面意思相符的词语：';
+  document.getElementById('vc-def').textContent=q.def;
+  document.getElementById('vc-ex').textContent=q.ex;
+  document.getElementById('vocab-fb').className='vocab-fb';
+  const others=vocabData.filter(v=>v.word!==q.word);
+  const opts=shuffle([q,...shuffle(others).slice(0,3)]);
+  const wb=document.getElementById('word-bank'); wb.innerHTML='';
+  opts.forEach(o=>{
+    const c=document.createElement('div'); c.className='word-chip'; c.textContent=o.word;
+    c.addEventListener('click',()=>checkVocab(c,o.word===q.word,q));
+    wb.appendChild(c);
+  });
+}
+function checkVocab(chip,correct,q){
+  if(vAnswered)return; vAnswered=true;
+  const fb=document.getElementById('vocab-fb');
+  if(correct){
+    chip.style.background='rgba(62,207,160,.22)'; chip.style.borderColor='var(--green)'; chip.style.color='#b0f0da';
+    vCorrect++;
+    fb.className='vocab-fb ok show'; fb.innerHTML='✅ <strong>答对了！</strong>「'+q.word+'」：'+q.def;
+    sfxCorrect();
+  } else {
+    chip.classList.add('shake'); chip.style.borderColor='var(--coral)'; chip.style.color='#ffc8c8';
+    fb.className='vocab-fb no show'; fb.innerHTML='❌ 答错了，正确答案是：<strong>'+q.word+'</strong>';
+    sfxWrong();
+  }
+  document.getElementById('vp-score').textContent='✅ '+vCorrect+' 分';
+  setTimeout(()=>{vIdx++;loadVQ();},1700);
+}
+function endVocab(){
+  const pct=Math.round(vCorrect/vQueue.length*100);
+  const stars=pct>=90?3:pct>=60?2:1;
+  addXP(vCorrect*5); setStars('vocab',stars); unlock('fill');
+  showResult('🐟 捕捞完成！','+'+vCorrect*5+' XP','⭐'.repeat(stars)+'☆'.repeat(3-stars),pct>=80?'词语掌握得很好！':'多复习几次，你会更棒！','去填词闯关 ✏️',()=>{closeResult();goFill();});
+}
+
+/* ══════════════════════════════════
+   FILL-IN-THE-BLANK GAME
+══════════════════════════════════ */
+const fillData=[
+  {
+    before:'鲸鱼生活在海洋里，但它不是鱼，是',answer:'哺乳动物',after:'。',
+    bank:['哺乳动物','爬行动物','鱼类','两栖动物'],
+    hint:'提示：需要用肺呼吸、以乳汁哺育幼崽的动物'
+  },
+  {
+    before:'鲸鱼的鼻孔长在',answer:'头顶',after:'上，每隔10分钟就会浮出水面呼吸。',
+    bank:['头顶','嘴边','背部','腹部'],
+    hint:'提示：鲸鱼浮出水面时，水柱从哪里喷出？'
+  },
+  {
+    before:'鲸鱼呼气时，喷出的水柱可高达',answer:'10米',after:'。',
+    bank:['10米','3米','5米','20米'],
+    hint:'提示：课文中有具体的数字'
+  },
+  {
+    before:'鲸鱼皮肤下面有一层厚厚的',answer:'脂肪',after:'，既可以保温，又可以让身体容易浮出水面。',
+    bank:['脂肪','肌肉','骨骼','皮毛'],
+    hint:'提示：软软厚厚的，储存能量的物质'
+  },
+  {
+    before:'蓝鲸是世界上最大的动物，它的体重',answer:'超过',after:'13万公斤。',
+    bank:['超过','不到','等于','减少'],
+    hint:'提示：比某个数量或标准更多'
+  },
+  {
+    before:'蓝鲸的体重有26头大象那么重，它的舌头上能站',answer:'50多个人',after:'。',
+    bank:['50多个人','10多个人','100多个人','30多个人'],
+    hint:'提示：课文中的具体数字'
+  },
+  {
+    before:'鲸鱼大多生活在',answer:'深海',after:'，有时也会到浅海活动。',
+    bank:['深海','浅海','河流','湖泊'],
+    hint:'提示：光线很少、水压很大的地方'
+  },
+  {
+    before:'有些鲸鱼睡觉时，会头朝上、尾巴朝下，',answer:'围成一圈',after:'。',
+    bank:['围成一圈','躺在海底','漂在水面','分开游泳'],
+    hint:'提示：像花朵一样的睡觉姿势'
+  },
+];
+
+let fQueue=[],fIdx=0,fCorrect=0,fTotal=0,fAnswered=false;
+function initFill(){
+  fQueue=shuffle([...fillData]); fIdx=0; fCorrect=0; fTotal=0; fAnswered=false;
+  loadFQ();
+}
+function loadFQ(){
+  if(fIdx>=fQueue.length){endFill();return;}
+  fAnswered=false;
+  const q=fQueue[fIdx];
+  document.getElementById('fc-num').textContent='第 '+(fIdx+1)+' 题 / 共 '+fQueue.length+' 题';
+  document.getElementById('fill-score-txt').textContent='得分：'+fCorrect+' / '+fTotal;
+  document.getElementById('fill-fb').className='fill-fb';
+  document.getElementById('btn-next-fill').classList.remove('show');
+  // build sentence with blank
+  const sen=document.getElementById('fc-sentence');
+  sen.innerHTML=q.before+'<input class="blank-input" id="fill-input" readonly placeholder="▢ 点击下方词语" />'+(q.after||'')+'<br><span style="font-size:.78rem;color:rgba(64,212,255,.55);margin-top:.3rem;display:block;">'+q.hint+'</span>';
+  // bank
+  const bank=document.getElementById('fill-bank');
+  bank.innerHTML='';
+  shuffle([...q.bank]).forEach(w=>{
+    const c=document.createElement('div'); c.className='fill-chip'; c.textContent=w;
+    c.addEventListener('click',()=>pickFillWord(w,c,q));
+    bank.appendChild(c);
+  });
+}
+function pickFillWord(word,chip,q){
+  if(fAnswered)return;
+  fAnswered=true; fTotal++;
+  document.getElementById('fill-input').value=word;
+  document.querySelectorAll('.fill-chip').forEach(c=>c.classList.add('used'));
+  const fb=document.getElementById('fill-fb');
+  if(word===q.answer){
+    fCorrect++;
+    document.getElementById('fill-input').classList.add('ok');
+    fb.className='fill-fb ok show'; fb.innerHTML='✅ <strong>填得正确！</strong>答案是「'+q.answer+'」';
+    sfxCorrect();
+  } else {
+    document.getElementById('fill-input').classList.add('wrong');
+    fb.className='fill-fb no show'; fb.innerHTML='❌ 答错了。正确答案是「<strong>'+q.answer+'</strong>」';
+    sfxWrong();
+  }
+  document.getElementById('fill-score-txt').textContent='得分：'+fCorrect+' / '+fTotal;
+  document.getElementById('btn-next-fill').classList.add('show');
+}
+function fillNext(){ sfxClick(); fIdx++; loadFQ(); }
+function fillSkip(){ sfxClick(); fIdx++; loadFQ(); }
+function endFill(){
+  const pct=fTotal>0?Math.round(fCorrect/fTotal*100):0;
+  const stars=pct>=90?3:pct>=60?2:1;
+  addXP(fCorrect*8); setStars('fill',stars); unlock('match');
+  showResult('✏️ 填词完成！','+'+fCorrect*8+' XP','⭐'.repeat(stars)+'☆'.repeat(3-stars),pct>=80?'句子掌握得很好！':'再复习一遍，你会更厉害！','去配对深潜 🔗',()=>{closeResult();goMatch();});
+}
+
+/* ══════════════════════════════════
+   MATCH GAME
+══════════════════════════════════ */
+const matchPairs=[
+  {word:'哺乳动物',def:'以乳汁哺育幼崽的动物'},
+  {word:'脂肪',def:'动物体内软厚的储能物质'},
+  {word:'保温',def:'保持温度、不散失热量'},
+  {word:'水柱',def:'竖直细长像柱子的水流'},
+  {word:'深海',def:'光线极少、水压很大的深处'},
+  {word:'浅海',def:'靠近海岸、较浅的海域'},
+  {word:'超过',def:'比某数量或标准更多'},
+  {word:'浮出水面',def:'从水里升上来露出水面'},
+  {word:'哺育',def:'喂养、养育幼崽'},
+  {word:'鼻孔',def:'鼻子上用来呼吸的小孔'},
+];
+let mSelW=null,mSelD=null,mOk=0,mTot=0;
+function initMatch(){
+  mSelW=null; mSelD=null; mOk=0; mTot=matchPairs.length;
+  document.getElementById('m-ok').textContent=0;
+  document.getElementById('m-tot').textContent=mTot;
+  document.getElementById('match-fb').textContent='';
+  const ws=shuffle([...matchPairs]); const ds=shuffle([...matchPairs]);
+  const wCol=document.getElementById('m-words'); const dCol=document.getElementById('m-defs');
+  wCol.innerHTML=''; dCol.innerHTML='';
+  ws.forEach(p=>{wCol.appendChild(mkChip(p.word,'w',p.word));});
+  ds.forEach(p=>{dCol.appendChild(mkChip(p.def,'d',p.word));});
+}
+function mkChip(label,type,key){
+  const el=document.createElement('div'); el.className='match-chip';
+  el.textContent=label; el.dataset.key=key; el.dataset.type=type;
+  el.addEventListener('click',()=>onMChip(el)); return el;
+}
+function onMChip(el){
+  if(el.classList.contains('ok')) return;
+  const t=el.dataset.type;
+  document.querySelectorAll('.match-chip.sel[data-type="'+t+'"]').forEach(e=>e.classList.remove('sel'));
+  el.classList.add('sel');
+  if(t==='w') mSelW=el; else mSelD=el;
+  if(mSelW&&mSelD){
+    const fb=document.getElementById('match-fb');
+    if(mSelW.dataset.key===mSelD.dataset.key){
+      mSelW.classList.remove('sel'); mSelD.classList.remove('sel');
+      mSelW.classList.add('ok'); mSelD.classList.add('ok');
+      mOk++; document.getElementById('m-ok').textContent=mOk;
+      fb.style.color='var(--green)'; fb.textContent='✅ 配对正确！很棒！';
+      sfxCorrect();
+      if(mOk===mTot) setTimeout(endMatch,400);
+    } else {
+      mSelW.classList.add('err'); mSelD.classList.add('err');
+      fb.style.color='var(--coral)'; fb.textContent='❌ 不对，再试试！';
+      sfxWrong();
+      setTimeout(()=>{mSelW.classList.remove('err','sel'); mSelD.classList.remove('err','sel');},600);
+    }
+    mSelW=null; mSelD=null;
+  }
+}
+function endMatch(){
+  const stars=3;
+  addXP(80); setStars('match',stars); unlock('quiz');
+  showResult('🔗 全部配对！','+80 XP','⭐⭐⭐','所有词语配对全部正确！太厉害了！','去总挑战 🎯',()=>{closeResult();goQuiz();});
+}
+
+/* ══════════════════════════════════
+   QUIZ
+══════════════════════════════════ */
+const quizQ=[
+  {
+    art:`<svg viewBox="0 0 640 110" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="qa1" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#030e22"/><stop offset="100%" stop-color="#082240"/></linearGradient></defs><rect width="640" height="110" fill="url(#qa1)"/><g transform="translate(200,55)"><ellipse cx="0" cy="0" rx="100" ry="38" fill="#1255a0"/><ellipse cx="-75" cy="2" rx="18" ry="16" fill="#103e85"/><circle cx="-86" cy="-4" r="6" fill="#041220"/><circle cx="-84" cy="-6" r="2" fill="white" opacity=".8"/><ellipse cx="-57" cy="-24" rx="4" ry="2.5" fill="#40d4ff"/><line x1="-57" y1="-27" x2="-61" y2="-44" stroke="#40d4ff" stroke-width="2" opacity=".7"/><line x1="-57" y1="-27" x2="-55" y2="-46" stroke="#a8e8f8" stroke-width="1.5" opacity=".6"/><path d="-8 20 Q15 48 -30 46 Q-46 38 -8 20Z" fill="#0e4a8a"/><path d="88 -10 Q110 -22 112 -6 Q106 4 88 2Z" fill="#0d4282"/><path d="88 2 Q110 12 109 2 Q106 4 88 2Z" fill="#0e4a8a"/></g><g transform="translate(65,35)"><ellipse cx="0" cy="0" rx="28" ry="10" fill="#2a8fcc" opacity=".7"/><path d="-28 0 Q-38 -8 -40 0 Q-38 8 -28 0Z" fill="#2a8fcc" opacity=".7"/><circle cx="16" cy="-2" r="3.5" fill="#041220"/><text x="0" y="-18" fill="#ff6b6b" font-size="11" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">鱼类？</text></g><text x="460" y="58" fill="rgba(200,230,255,0.65)" font-size="13" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">鲸鱼属于什么动物？</text></svg>`,
+    q:'鲸鱼属于哪一类动物？',opts:['鱼类','爬行动物','哺乳动物','两栖动物'],ans:2,
+    fb:'鲸鱼虽然生活在海洋里，但它是哺乳动物，需要用肺呼吸，会喂母乳给幼崽。'
+  },
+  {
+    art:`<svg viewBox="0 0 640 110" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="qa2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#03111e"/><stop offset="100%" stop-color="#082038"/></linearGradient></defs><rect width="640" height="110" fill="url(#qa2)"/><path d="M0 55 Q160 45 320 55 Q480 65 640 55" stroke="rgba(64,212,255,0.4)" stroke-width="2" fill="none"/><g transform="translate(280,52)"><line x1="0" y1="0" x2="-5" y2="-32" stroke="#40d4ff" stroke-width="3" opacity=".8"/><line x1="0" y1="0" x2="0" y2="-38" stroke="#a8e8f8" stroke-width="2.5" opacity=".7"/><line x1="0" y1="0" x2="5" y2="-30" stroke="#40d4ff" stroke-width="2" opacity=".6"/><text x="0" y="-44" fill="#ffd84d" font-size="13" font-family="'Noto Sans SC',sans-serif" text-anchor="middle" font-weight="bold">？ 米</text></g><ellipse cx="280" cy="80" rx="110" ry="28" fill="#1255a0"/><ellipse cx="185" cy="80" rx="16" ry="14" fill="#103e85"/><circle cx="175" cy="76" r="5" fill="#041220"/><line x1="185" y1="55" x2="185" y2="15" stroke="rgba(255,216,77,0.5)" stroke-width="1.2" stroke-dasharray="3,3"/>
+<text x="470" y="55" fill="rgba(200,230,255,0.7)" font-size="12" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">鼻孔在头顶</text><text x="470" y="72" fill="rgba(200,230,255,0.7)" font-size="12" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">水柱高达...？</text></svg>`,
+    q:'鲸鱼呼气时，喷出的水柱最高可达多少米？',opts:['3 米','5 米','10 米','20 米'],ans:2,
+    fb:'鲸鱼呼气时喷出的水柱可高达10米，非常壮观！'
+  },
+  {
+    art:`<svg viewBox="0 0 640 110" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="qa3" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#030e1e"/><stop offset="100%" stop-color="#071e36"/></linearGradient></defs><rect width="640" height="110" fill="url(#qa3)"/><g transform="translate(200,55)"><ellipse cx="0" cy="0" rx="85" ry="66" fill="#1255a0"/><ellipse cx="0" cy="0" rx="68" ry="52" fill="#2178b8" opacity=".85"/><ellipse cx="0" cy="0" rx="46" ry="36" fill="#0d4882"/><line x1="85" y1="0" x2="128" y2="-18" stroke="rgba(255,216,77,.7)" stroke-width="1.3"/><text x="135" y="-20" fill="#ffd84d" font-size="11" font-family="'Noto Sans SC',sans-serif" font-weight="bold">？？</text><text x="135" y="-6" fill="#ffd84d" font-size="10.5" font-family="'Noto Sans SC',sans-serif">（软厚层）</text><line x1="68" y1="22" x2="108" y2="40" stroke="rgba(64,212,255,.7)" stroke-width="1.3"/><text x="115" y="43" fill="#40d4ff" font-size="11" font-family="'Noto Sans SC',sans-serif">内部</text></g><rect x="400" y="28" width="220" height="54" rx="10" fill="rgba(18,85,160,0.38)" stroke="rgba(64,212,255,.2)" stroke-width="1"/><text x="510" y="48" fill="#ffd84d" font-size="11.5" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">皮肤下的软厚层</text><text x="510" y="65" fill="#c8f0ff" font-size="11" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">作用：① 保温 ② 助浮</text></svg>`,
+    q:'鲸鱼皮肤下的那一层软厚物质叫什么？',opts:['肌肉','骨骼','脂肪','皮毛'],ans:2,
+    fb:'鲸鱼皮肤下面有一层厚厚的脂肪，既可以保温，又可以让身体容易浮出水面。'
+  },
+  {
+    art:`<svg viewBox="0 0 640 110" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="qa4" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#030c1c"/><stop offset="100%" stop-color="#061a30"/></linearGradient></defs><rect width="640" height="110" fill="url(#qa4)"/><g transform="translate(305,55)"><ellipse cx="0" cy="8" rx="230" ry="42" fill="#0f4d9a"/><ellipse cx="-18" cy="-10" rx="148" ry="20" fill="#1a6fbe" opacity=".48"/><ellipse cx="-185" cy="10" rx="22" ry="20" fill="#103e85"/><circle cx="-198" cy="3" r="8.5" fill="#041220"/><path d="210 -12 Q244 -28 247 -8 Q238 4 210 2Z" fill="#0d4282"/><path d="210 2 Q244 14 242 2 Q238 4 210 2Z" fill="#0e4a8a"/><line x1="-210" y1="60" x2="210" y2="60" stroke="rgba(255,216,77,0.58)" stroke-width="1.5" stroke-dasharray="4,3"/><text x="0" y="75" fill="#ffd84d" font-size="13" font-family="'Noto Sans SC',sans-serif" text-anchor="middle" font-weight="bold">30 多米</text></g><text x="38" y="32" fill="rgba(200,230,255,0.7)" font-size="11.5" font-family="'Noto Sans SC',sans-serif">蓝鲸体重 =</text><text x="38" y="52" font-size="16">🐘🐘🐘🐘🐘🐘</text><text x="38" y="72" fill="rgba(200,230,255,0.6)" font-size="11" font-family="'Noto Sans SC',sans-serif">26 头大象 × ？</text></svg>`,
+    q:'蓝鲸的体重超过多少公斤？',opts:['1 万公斤','5 万公斤','13 万公斤','30 万公斤'],ans:2,
+    fb:'蓝鲸的体重超过13万公斤，相当于26头大象那么重！'
+  },
+  {
+    art:`<svg viewBox="0 0 640 110" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="qa5" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#030c1a"/><stop offset="100%" stop-color="#061528"/></linearGradient></defs><rect width="640" height="110" fill="url(#qa5)"/><g transform="translate(250,58)"><path d="M-130,-42 Q-148,5 -130,50 Q-65,72 75,56 Q165,38 180,7 Q165,-26 75,-54 Q-65,-74 -130,-42Z" fill="#0f4d9a"/><path d="M-112,-27 Q-47,-46 68,-35 Q140,-17 155,7 Q140,32 68,44 Q-47,54 -112,32 Q-138,10 -112,-27Z" fill="#041220"/><path d="M-92,26 Q0,54 90,36 Q72,50 0,62 Q-72,50 -92,26Z" fill="#2a0e52" opacity=".85"/><g fill="#c8e8f8" opacity=".88"><rect x="-78" y="18" width="3.5" height="12" rx="1.5"/><circle cx="-76.5" cy="15" r="3.2"/><rect x="-58" y="22" width="3.5" height="12" rx="1.5"/><circle cx="-56.5" cy="19" r="3.2"/><rect x="-38" y="25" width="3.5" height="12" rx="1.5"/><circle cx="-36.5" cy="22" r="3.2"/><rect x="-18" y="28" width="3.5" height="12" rx="1.5"/><circle cx="-16.5" cy="25" r="3.2"/><rect x="2" y="29" width="3.5" height="12" rx="1.5"/><circle cx="3.5" cy="26" r="3.2"/><rect x="22" y="28" width="3.5" height="12" rx="1.5"/><circle cx="23.5" cy="25" r="3.2"/><rect x="42" y="26" width="3.5" height="12" rx="1.5"/><circle cx="43.5" cy="23" r="3.2"/><rect x="62" y="22" width="3.5" height="12" rx="1.5"/><circle cx="63.5" cy="19" r="3.2"/></g><text x="0" y="-50" fill="#ffd84d" font-size="14" font-family="'Noto Sans SC',sans-serif" text-anchor="middle" font-weight="bold">能站多少人？</text></g><rect x="492" y="30" width="135" height="52" rx="10" fill="rgba(18,85,160,0.4)" stroke="rgba(64,212,255,.2)" stroke-width="1"/><text x="559" y="51" fill="#ffd84d" font-size="12" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">蓝鲸的舌头</text><text x="559" y="70" fill="#40d4ff" font-size="13" font-family="'Noto Sans SC',sans-serif" text-anchor="middle" font-weight="bold">能站 ？ 人</text></svg>`,
+    q:'蓝鲸的舌头上大约能站多少个人？',opts:['10 多个','30 多个','50 多个','100 多个'],ans:2,
+    fb:'蓝鲸的嘴巴非常大，舌头上能站50多个人！'
+  },
+  {
+    art:`<svg viewBox="0 0 640 110" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="qa6" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#02081a"/><stop offset="100%" stop-color="#040e20"/></linearGradient></defs><rect width="640" height="110" fill="url(#qa6)"/><g transform="translate(310,55)"><circle cx="0" cy="0" r="50" fill="none" stroke="rgba(64,212,255,0.14)" stroke-width="1.5" stroke-dasharray="4,4"/><g transform="rotate(0) translate(0,-42)"><ellipse cx="0" cy="0" rx="9.5" ry="28" fill="#1255a0"/><ellipse cx="0" cy="-16" rx="7.5" ry="9" fill="#103e85"/><circle cx="-3" cy="-20" r="3.5" fill="#041220"/><path d="-7 18 Q-14 28 -9 32 Q0 36 9 32 Q14 28 7 18Z" fill="#0d4282"/></g><g transform="rotate(72) translate(0,-42)"><ellipse cx="0" cy="0" rx="9.5" ry="28" fill="#1255a0"/><ellipse cx="0" cy="-16" rx="7.5" ry="9" fill="#103e85"/><circle cx="-3" cy="-20" r="3.5" fill="#041220"/><path d="-7 18 Q-14 28 -9 32 Q0 36 9 32 Q14 28 7 18Z" fill="#0d4282"/></g><g transform="rotate(144) translate(0,-42)"><ellipse cx="0" cy="0" rx="9.5" ry="28" fill="#1255a0"/><ellipse cx="0" cy="-16" rx="7.5" ry="9" fill="#103e85"/><circle cx="-3" cy="-20" r="3.5" fill="#041220"/><path d="-7 18 Q-14 28 -9 32 Q0 36 9 32 Q14 28 7 18Z" fill="#0d4282"/></g><g transform="rotate(216) translate(0,-42)"><ellipse cx="0" cy="0" rx="9.5" ry="28" fill="#1255a0"/><ellipse cx="0" cy="-16" rx="7.5" ry="9" fill="#103e85"/><circle cx="-3" cy="-20" r="3.5" fill="#041220"/><path d="-7 18 Q-14 28 -9 32 Q0 36 9 32 Q14 28 7 18Z" fill="#0d4282"/></g><g transform="rotate(288) translate(0,-42)"><ellipse cx="0" cy="0" rx="9.5" ry="28" fill="#1255a0"/><ellipse cx="0" cy="-16" rx="7.5" ry="9" fill="#103e85"/><circle cx="-3" cy="-20" r="3.5" fill="#041220"/><path d="-7 18 Q-14 28 -9 32 Q0 36 9 32 Q14 28 7 18Z" fill="#0d4282"/></g><text x="0" y="5" fill="rgba(168,232,248,0.5)" font-size="16" text-anchor="middle">Zzz</text></g><text x="85" y="55" fill="rgba(200,230,255,0.65)" font-size="11.5" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">睡觉时</text><text x="85" y="72" fill="rgba(200,230,255,0.65)" font-size="11.5" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">什么姿势？</text><text x="550" y="55" fill="rgba(200,230,255,0.5)" font-size="11" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">深海 or</text><text x="550" y="72" fill="rgba(200,230,255,0.5)" font-size="11" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">浅海？</text></svg>`,
+    q:'有些鲸鱼睡觉时是什么姿势？',opts:['躺在海底','头朝上尾朝下，围成一圈','浮在水面上','独自游泳'],ans:1,
+    fb:'有些鲸鱼睡觉时，会聚在一起，头朝上、尾巴朝下，围成一圈！'
+  },
+  {
+    art:`<svg viewBox="0 0 640 110" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="qa7" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#041422"/><stop offset="100%" stop-color="#082038"/></linearGradient></defs><rect width="640" height="110" fill="url(#qa7)"/><g transform="translate(290,55)"><ellipse cx="0" cy="0" rx="118" ry="36" fill="#1255a0"/><ellipse cx="-12" cy="-11" rx="74" ry="16" fill="#1a6fbe" opacity=".5"/><ellipse cx="-90" cy="2" rx="16" ry="14" fill="#103e85"/><circle cx="-100" cy="-4" r="6.5" fill="#041220"/><circle cx="-98" cy="-6" r="2.2" fill="white" opacity=".8"/><ellipse cx="-72" cy="-24" rx="4.5" ry="2.5" fill="#40d4ff" opacity=".85"/><path d="-8 18 Q18 46 -28 44 Q-45 36 -8 18Z" fill="#0e4a8a"/><path d="106 -10 Q132 -24 135 -6 Q128 5 106 3Z" fill="#0d4282"/><path d="106 3 Q132 15 130 3 Q128 5 106 3Z" fill="#0e4a8a"/></g><text x="500" y="42" fill="rgba(64,212,255,0.75)" font-size="14" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">鼻孔位置</text><text x="500" y="65" fill="rgba(255,216,77,0.85)" font-size="30" text-anchor="middle">↑</text><text x="500" y="88" fill="rgba(64,212,255,0.65)" font-size="12" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">在哪里？</text></svg>`,
+    q:'鲸鱼的鼻孔长在身体的哪个部位？',opts:['嘴巴旁边','肚子下面','头顶上','背部中间'],ans:2,
+    fb:'鲸鱼的鼻孔长在头顶上，这样浮出水面时就能轻松呼吸。'
+  },
+  {
+    art:`<svg viewBox="0 0 640 110" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="qa8" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#030e1a"/><stop offset="100%" stop-color="#061828"/></linearGradient></defs><rect width="640" height="110" fill="url(#qa8)"/><g transform="translate(190,55)"><ellipse cx="0" cy="0" rx="195" ry="38" fill="#0f4d9a" opacity=".9"/><ellipse cx="-145" cy="2" rx="22" ry="20" fill="#103e85"/><circle cx="-158" cy="-4" r="8" fill="#041220"/><circle cx="-155" cy="-6.5" r="3" fill="white" opacity=".8"/><text x="0" y="5" fill="rgba(200,240,255,0.7)" font-size="13" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">蓝鲸（世界最大）</text><path d="183 -11 Q215 -27 218 -8 Q210 4 183 2Z" fill="#0d4282"/><path d="183 2 Q215 14 213 2 Q210 4 183 2Z" fill="#0e4a8a"/></g><g transform="translate(530,48)" opacity=".85"><text x="0" y="0" font-size="20">🐘</text><text x="0" y="22" fill="#c8e8f8" font-size="11" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">×26头</text></g><text x="485" y="50" fill="rgba(255,216,77,0.8)" font-size="18" font-family="serif" text-anchor="middle">=</text></svg>`,
+    q:'用来说明脂肪层"既可以保温，又可以让身体容易浮出水面"，用的是哪个关联词？',opts:['因为……所以……','既……又……','虽然……但是……','不但……而且……'],ans:1,
+    fb:'课文用"既……又……"表示两个作用同时存在，是一个常用的并列关联词。'
+  },
+  {
+    art:`<svg viewBox="0 0 640 110" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="qa9" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#020c1c"/><stop offset="100%" stop-color="#05182c"/></linearGradient></defs><rect width="640" height="110" fill="url(#qa9)"/><line x1="0" y1="55" x2="640" y2="55" stroke="rgba(64,212,255,0.15)" stroke-width="1" stroke-dasharray="4,3"/>
+<text x="80" y="36" fill="rgba(64,212,255,0.7)" font-size="13" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">深海</text><rect x="22" y="55" width="116" height="50" fill="rgba(8,30,60,0.8)" stroke="rgba(64,212,255,0.15)" stroke-width="1"/>
+<text x="80" y="75" fill="rgba(200,230,255,0.5)" font-size="11" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">光线很少</text><text x="80" y="92" fill="rgba(200,230,255,0.5)" font-size="11" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">水压很大</text>
+<text x="320" y="36" fill="rgba(64,212,255,0.7)" font-size="13" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">水面</text>
+<text x="540" y="36" fill="rgba(62,207,160,0.7)" font-size="13" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">浅海</text><rect x="482" y="55" width="116" height="50" fill="rgba(8,40,50,0.8)" stroke="rgba(62,207,160,0.15)" stroke-width="1"/>
+<text x="540" y="75" fill="rgba(200,240,230,0.5)" font-size="11" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">靠近海岸</text><text x="540" y="92" fill="rgba(200,240,230,0.5)" font-size="11" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">较浅</text>
+<g transform="translate(310,72)"><ellipse cx="0" cy="0" rx="55" ry="20" fill="#1255a0" opacity=".8"/><circle cx="-42" cy="0" r="9" fill="#103e85"/><circle cx="-48" cy="-2" r="4" fill="#041220"/></g></svg>`,
+    q:'鲸鱼通常生活在哪里，有时也会去哪里活动？',opts:['浅海，也去深海','深海，也去浅海','大西洋，也去太平洋','海面，也去海底'],ans:1,
+    fb:'鲸鱼大多生活在深海，有时也会到浅海活动。'
+  },
+  {
+    art:`<svg viewBox="0 0 640 110" xmlns="http://www.w3.org/2000/svg"><defs><linearGradient id="qa10" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#030e1e"/><stop offset="100%" stop-color="#071c2e"/></linearGradient></defs><rect width="640" height="110" fill="url(#qa10)"/><g transform="translate(175,55)"><ellipse cx="0" cy="6" rx="165" ry="40" fill="#0f4d9a" opacity=".85"/><circle cx="-128" cy="8" r="16" fill="#103e85"/><circle cx="-138" cy="4" r="7" fill="#041220"/><circle cx="-135" cy="2" r="2.5" fill="white" opacity=".8"/><path d="-155 14 Q-142 22 -128 17" stroke="#0a3a6e" stroke-width="2.5" fill="none" stroke-linecap="round"/><ellipse cx="-105" cy="-25" rx="5" ry="3" fill="#083060"/><line x1="-105" y1="-28" x2="-110" y2="-50" stroke="#40d4ff" stroke-width="2.5" opacity=".7"/><line x1="-105" y1="-28" x2="-102" y2="-53" stroke="#a8e8f8" stroke-width="2" opacity=".6"/><path d="152 -10 Q182 -25 184 -5 Q176 5 152 3Z" fill="#0d4282"/><path d="152 3 Q182 14 180 3 Q176 5 152 3Z" fill="#0e4a8a"/></g><text x="478" y="38" fill="rgba(200,230,255,0.7)" font-size="11" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">总结：</text><text x="478" y="55" fill="#ffd84d" font-size="11" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">哺乳动物</text><text x="478" y="72" fill="#40d4ff" font-size="11" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">用肺呼吸</text><text x="478" y="89" fill="#3ecfa0" font-size="11" font-family="'Noto Sans SC',sans-serif" text-anchor="middle">有脂肪层</text></svg>`,
+    q:'下面哪一句关于鲸鱼的说法是正确的？',opts:['鲸鱼用鳃呼吸，是鱼类','鲸鱼是哺乳动物，用肺呼吸','鲸鱼没有脂肪，皮肤很薄','鲸鱼只生活在浅海'],ans:1,
+    fb:'鲸鱼是哺乳动物，用肺呼吸，鼻孔在头顶，皮下有厚厚的脂肪层，大多生活在深海。'
+  }
+];
+
+let qIdx=0,qScore=0,qAnswered=false;
+function initQuiz(){ qIdx=0; qScore=0; qAnswered=false; document.getElementById('q-score-val').textContent=0; loadQ(); }
+function loadQ(){
+  if(qIdx>=quizQ.length){endQuiz();return;}
+  const q=quizQ[qIdx]; qAnswered=false;
+  document.getElementById('qprog').style.width=(qIdx/quizQ.length*100)+'%';
+  document.getElementById('q-num').textContent='第 '+(qIdx+1)+' 题 / 共 '+quizQ.length+' 题';
+  document.getElementById('q-stem').textContent=q.q;
+  document.getElementById('q-art-wrap').innerHTML=`<img class="q-art" src="data:image/svg+xml;charset=utf-8,${encodeURIComponent(q.art)}" alt=""/>`;
+  document.getElementById('q-fb').className='q-fb';
+  document.getElementById('btn-next-q').classList.remove('show');
+  const opts=document.getElementById('q-opts'); opts.innerHTML='';
+  ['A','B','C','D'].forEach((l,i)=>{
+    const btn=document.createElement('button'); btn.className='q-opt';
+    btn.textContent=l+'．'+q.opts[i];
+    btn.addEventListener('click',()=>selectQ(i,btn,q));
+    opts.appendChild(btn);
+  });
+}
+function selectQ(idx,btn,q){
+  if(qAnswered)return; qAnswered=true;
+  document.querySelectorAll('.q-opt').forEach(b=>b.disabled=true);
+  const fb=document.getElementById('q-fb');
+  if(idx===q.ans){
+    btn.classList.add('correct'); qScore+=10;
+    document.getElementById('q-score-val').textContent=qScore;
+    fb.className='q-fb ok show'; fb.innerHTML='✅ <strong>答对了！</strong> '+q.fb;
+    sfxCorrect();
+  } else {
+    btn.classList.add('wrong');
+    document.querySelectorAll('.q-opt')[q.ans].classList.add('correct');
+    fb.className='q-fb no show'; fb.innerHTML='❌ <strong>答错了。</strong> '+q.fb;
+    sfxWrong();
+  }
+  document.getElementById('btn-next-q').classList.add('show');
+}
+function nextQ(){ sfxClick(); qIdx++; loadQ(); }
+function endQuiz(){
+  document.getElementById('qprog').style.width='100%';
+  const pct=Math.round(qScore/(quizQ.length*10)*100);
+  const stars=pct>=90?3:pct>=60?2:1;
+  addXP(qScore); setStars('quiz',stars);
+  let title,msg;
+  if(pct>=90){title='🏆 鲸鱼专家！';msg='你对课文理解非常深入，太厉害了！';}
+  else if(pct>=70){title='⭐ 学得很好！';msg='做得不错！再复习一次会更棒！';}
+  else{title='📖 继续加油！';msg='仔细重读课文，你一定可以做得更好！';}
+  showResult(title,qScore+' / '+(quizQ.length*10)+' 分','⭐'.repeat(stars)+'☆'.repeat(3-stars),msg,'再挑战 →',()=>{closeResult();initQuiz();});
+}
+
+/* ══════════════════════════════════
+   RESULT OVERLAY
+══════════════════════════════════ */
+function showResult(title,pts,stars,msg,btnTxt,btnFn){
+  document.getElementById('res-title').textContent=title;
+  document.getElementById('res-pts').textContent=pts;
+  document.getElementById('res-stars').textContent=stars;
+  document.getElementById('res-msg').textContent=msg;
+  const btn=document.getElementById('btn-res-main');
+  btn.textContent=btnTxt; btn.onclick=btnFn;
+  document.getElementById('result-overlay').classList.add('show');
+}
+function closeResult(){
+  document.getElementById('result-overlay').classList.remove('show');
+  goMap();
+}
+
+/* ══════════════════════════════════
+   GRAND FINALE
+══════════════════════════════════ */
+function showFinale(){
+  const overlay=document.getElementById('finale-overlay');
+  overlay.classList.add('show');
+  // confetti
+  const con=document.getElementById('finale-confetti');
+  con.innerHTML='';
+  const colors=['#ffd84d','#40d4ff','#3ecfa0','#ff7c5e','#9b6dff','#c8f0ff'];
+  for(let i=0;i<60;i++){
+    const p=document.createElement('div'); p.className='conf-piece';
+    const s=6+Math.random()*10;
+    p.style.cssText=`width:${s}px;height:${s*0.5}px;left:${Math.random()*100}%;background:${colors[Math.floor(Math.random()*colors.length)]};animation-duration:${2+Math.random()*3}s;animation-delay:${Math.random()*2}s;`;
+    con.appendChild(p);
+  }
+  sfxUnlock();
+}
+function replayAll(){
+  document.getElementById('finale-overlay').classList.remove('show');
+  // reset state
+  S.xp=0; S.stars={lesson:0,vocab:0,fill:0,match:0,quiz:0};
+  refreshXP();
+  // reset map
+  ['lesson','vocab','fill','match','quiz'].forEach(k=>{
+    const node=document.getElementById('mn-'+k);
+    node.classList.remove('done');
+    document.getElementById('ns-'+k).textContent='☆☆☆';
+    if(k!=='lesson'){
+      node.classList.add('locked');
+      const nb=document.getElementById('nb-'+k);
+      nb.className='node-badge nb-lock'; nb.textContent='🔒';
+    } else {
+      const nb=document.getElementById('nb-'+k);
+      nb.className='node-badge nb-new'; nb.textContent='NEW';
+    }
+  });
+  refreshTotalStars();
+  goMap();
+}
+</script>
+</body>
+</html>
