@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>露营大冒险 — 《露营记》互动游戏</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --orange:#FF6B35;--teal:#2EC4B6;--yellow:#FFD166;--green:#4CAF50;
+  --red:#F44336;--blue:#2196F3;--purple:#9C27B0;--sky:#87CEEB;
+  --dark:#2D3436;--white:#fff;--shadow:0 4px 16px rgba(0,0,0,.2);
+}
+html,body{width:100%;height:100%;overflow:hidden;font-family:'PingFang SC','Microsoft YaHei','Noto Sans SC',sans-serif;}
+/* ── SCREENS ── */
+.screen{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;overflow:hidden}
+.screen.active{display:flex}
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 36px;border:none;border-radius:50px;font-size:20px;font-weight:700;cursor:pointer;transition:transform .12s,box-shadow .12s;font-family:inherit;letter-spacing:1px;user-select:none}
+.btn:hover{transform:translateY(-3px);box-shadow:0 6px 20px rgba(0,0,0,.25)}
+.btn:active{transform:translateY(0)}
+.btn-orange{background:var(--orange);color:#fff}
+.btn-teal{background:var(--teal);color:#fff}
+.btn-yellow{background:var(--yellow);color:#333}
+.btn-green{background:var(--green);color:#fff}
+.btn-blue{background:var(--blue);color:#fff}
+.btn-purple{background:var(--purple);color:#fff}
+.btn-sm{padding:10px 22px;font-size:16px}
+/* ── HUD BAR ── */
+.hud{width:100%;max-width:860px;display:flex;align-items:center;justify-content:space-between;padding:14px 20px;background:rgba(255,255,255,.15);backdrop-filter:blur(8px);border-radius:0 0 20px 20px;position:relative;z-index:10}
+.hud-title{font-size:22px;font-weight:800;color:#fff;text-shadow:1px 2px 4px rgba(0,0,0,.4)}
+.hud-score{font-size:18px;font-weight:700;color:var(--yellow);text-shadow:1px 1px 3px rgba(0,0,0,.4)}
+.star-row{display:flex;gap:4px;font-size:24px}
+/* ── TOAST ── */
+#toast{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);background:rgba(30,30,30,.9);color:#fff;padding:18px 40px;border-radius:18px;font-size:24px;font-weight:700;z-index:999;transition:transform .25s,opacity .25s;opacity:0;pointer-events:none;text-align:center;min-width:220px}
+#toast.show{transform:translate(-50%,-50%) scale(1);opacity:1}
+/* ── CONFETTI ── */
+#confetti-canvas{position:fixed;inset:0;pointer-events:none;z-index:998}
+
+/* ════════════════════════════════
+   WELCOME SCREEN
+════════════════════════════════ */
+#welcome{
+  background:linear-gradient(180deg,#0D1B2A 0%,#1B3A5C 25%,#2D6A8A 45%,#E06C3A 65%,#F4A460 80%,#6B9E6B 92%,#4A7A4A 100%);
+  justify-content:center;gap:0
+}
+.w-sky{position:absolute;top:0;left:0;width:100%;height:55%;overflow:hidden}
+.star{position:absolute;background:#fff;border-radius:50%;animation:twinkle 2s infinite alternate}
+@keyframes twinkle{from{opacity:.3}to{opacity:1}}
+.w-ground{position:absolute;bottom:0;left:0;width:100%;height:18%;background:linear-gradient(#4A7A4A,#3A6A3A)}
+.w-sea{position:absolute;bottom:18%;left:0;width:100%;height:14%;background:linear-gradient(#1A5276,#2980B9);overflow:hidden}
+.wave{position:absolute;width:200%;height:100%;background:repeating-linear-gradient(90deg,transparent,transparent 40px,rgba(255,255,255,.1) 40px,rgba(255,255,255,.1) 80px);animation:waveAnim 3s linear infinite}
+@keyframes waveAnim{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.tent{position:absolute;bottom:18%;left:50%;transform:translateX(-50%)}
+.tent svg{width:120px;height:100px}
+.fire{position:absolute;bottom:18%;left:calc(50% + 80px);display:flex;flex-direction:column;align-items:center}
+.flame{width:16px;height:28px;background:linear-gradient(#FFD700,#FF4500);border-radius:50% 50% 20% 20%;animation:flicker .5s ease-in-out infinite alternate;transform-origin:bottom center}
+@keyframes flicker{from{transform:scaleX(1) scaleY(1)}to{transform:scaleX(.8) scaleY(1.2)}}
+.ember{width:24px;height:14px;background:linear-gradient(#FF6B35,#8B0000);border-radius:50%;margin-top:-4px}
+.w-title{position:relative;z-index:5;text-align:center;margin-top:160px}
+.w-title h1{font-size:clamp(38px,8vw,64px);font-weight:900;color:#fff;text-shadow:0 3px 12px rgba(0,0,0,.5),0 0 40px rgba(255,180,80,.6);letter-spacing:4px;line-height:1.2}
+.w-title p{color:rgba(255,255,255,.85);font-size:18px;margin-top:10px;letter-spacing:2px;text-shadow:0 1px 4px rgba(0,0,0,.4)}
+.w-btns{position:relative;z-index:5;margin-top:36px;display:flex;gap:20px;flex-wrap:wrap;justify-content:center}
+
+/* ════════════════════════════════
+   MAP SCREEN
+════════════════════════════════ */
+#map-screen{background:linear-gradient(160deg,#87CEEB 0%,#B0E0FF 50%,#90EE90 100%);justify-content:flex-start}
+.map-container{position:relative;width:100%;max-width:860px;flex:1;overflow:hidden}
+.map-bg{position:absolute;inset:0;overflow:hidden}
+.map-sea{position:absolute;bottom:0;left:0;width:50%;height:45%;background:linear-gradient(#1E90FF,#4169E1);border-radius:0 40px 0 0}
+.map-forest{position:absolute;top:10%;right:0;width:45%;height:50%;background:linear-gradient(#228B22,#2E8B57);border-radius:40px 0 0 40px}
+.map-path{position:absolute;width:100%;height:100%;pointer-events:none}
+.zone-card{position:absolute;background:rgba(255,255,255,.9);border-radius:20px;padding:14px 18px;cursor:pointer;box-shadow:var(--shadow);transition:transform .2s,box-shadow .2s;text-align:center;min-width:160px;border:3px solid transparent}
+.zone-card:hover{transform:scale(1.05);box-shadow:0 8px 28px rgba(0,0,0,.25)}
+.zone-card.locked{opacity:.5;cursor:not-allowed;filter:grayscale(.6)}
+.zone-card.done{border-color:var(--green)}
+.zone-num{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:18px;color:#fff;margin:0 auto 8px}
+.zone-name{font-size:15px;font-weight:700;color:var(--dark)}
+.zone-stars{font-size:18px;margin-top:4px;min-height:22px}
+.zone-icon{font-size:32px;margin-bottom:4px}
+#z1{top:12%;left:5%;} #z1 .zone-num{background:var(--orange)}
+#z2{top:12%;left:50%;} #z2 .zone-num{background:var(--teal)}
+#z3{bottom:40%;left:5%;} #z3 .zone-num{background:var(--purple)}
+#z4{bottom:12%;right:5%;} #z4 .zone-num{background:var(--blue)}
+.map-title{font-size:24px;font-weight:800;color:var(--dark);text-align:center;margin-top:8px;text-shadow:1px 1px 0 rgba(255,255,255,.8)}
+.map-progress{margin-top:6px;font-size:15px;color:rgba(0,0,0,.6);font-weight:600}
+
+/* ════════════════════════════════
+   GAME SCREENS SHARED
+════════════════════════════════ */
+.game-body{flex:1;width:100%;max-width:860px;display:flex;flex-direction:column;align-items:center;padding:16px 20px;gap:16px;overflow-y:auto}
+.game-instruction{background:rgba(255,255,255,.92);border-radius:16px;padding:16px 24px;font-size:17px;color:var(--dark);line-height:1.7;width:100%;border-left:5px solid var(--orange)}
+.game-instruction strong{color:var(--orange)}
+
+/* ════════════════════════════════
+   GAME 1 — 两人三脚
+════════════════════════════════ */
+#game1{background:linear-gradient(180deg,#87CEEB 0%,#98D8C8 60%,#90C060 80%,#6A9A40 100%)}
+.race-track{width:100%;background:rgba(255,255,255,.3);border-radius:20px;padding:20px;position:relative}
+.track-lane{position:relative;height:80px;background:rgba(255,255,255,.5);border-radius:12px;margin:10px 0;overflow:hidden;border:2px dashed rgba(255,255,255,.8)}
+.track-lane::before{content:'起点';position:absolute;left:12px;top:50%;transform:translateY(-50%);font-size:13px;font-weight:700;color:rgba(0,0,0,.4)}
+.track-lane::after{content:'终点🏁';position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:13px;font-weight:700;color:rgba(0,0,0,.4)}
+.runner{position:absolute;top:50%;transform:translateY(-50%);font-size:36px;transition:left .25s;cursor:default}
+.runner.stumble{animation:stumbleAnim .4s}
+@keyframes stumbleAnim{0%{transform:translateY(-50%) rotate(0)}30%{transform:translateY(-20%) rotate(30deg)}60%{transform:translateY(-50%) rotate(-15deg)}100%{transform:translateY(-50%) rotate(0)}}
+.foot-btns{display:flex;gap:20px;width:100%;justify-content:center;margin-top:8px}
+.foot-btn{padding:20px 40px;font-size:24px;border-radius:20px;border:none;cursor:pointer;font-weight:800;color:#fff;transition:transform .1s,box-shadow .1s;font-family:inherit;position:relative;user-select:none}
+.foot-btn:active{transform:scale(.93)}
+.foot-btn.lit{transform:scale(1.1);box-shadow:0 0 20px rgba(255,255,255,.8)}
+#btn-left{background:linear-gradient(135deg,#FF6B35,#E64A19)}
+#btn-right{background:linear-gradient(135deg,#2EC4B6,#00897B)}
+.race-timer{text-align:center;font-size:28px;font-weight:800;color:#fff;text-shadow:0 2px 8px rgba(0,0,0,.4)}
+.race-status{text-align:center;font-size:18px;font-weight:700;color:#fff;min-height:28px;text-shadow:0 1px 4px rgba(0,0,0,.3)}
+.next-foot{display:flex;align-items:center;gap:8px;font-size:17px;color:#fff;font-weight:700;background:rgba(0,0,0,.2);padding:10px 24px;border-radius:50px}
+.foot-indicator{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#fff;transition:background .2s}
+.foot-indicator.left-foot{background:linear-gradient(135deg,#FF6B35,#E64A19)}
+.foot-indicator.right-foot{background:linear-gradient(135deg,#2EC4B6,#00897B)}
+
+/* ════════════════════════════════
+   GAME 2 — 词语配对
+════════════════════════════════ */
+#game2{background:linear-gradient(160deg,#FFF3E0 0%,#FFE082 50%,#FFCC02 100%)}
+.match-arena{width:100%;display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+.match-col-title{text-align:center;font-size:15px;font-weight:800;color:rgba(0,0,0,.5);letter-spacing:2px;margin-bottom:4px}
+.match-words,.match-defs{display:flex;flex-direction:column;gap:10px}
+.match-card{padding:14px 16px;border-radius:14px;font-size:17px;font-weight:700;cursor:pointer;transition:transform .15s,box-shadow .15s,background .15s;box-shadow:0 2px 10px rgba(0,0,0,.12);text-align:center;line-height:1.4;border:3px solid transparent;background:#fff;color:var(--dark)}
+.match-card:hover{transform:translateY(-2px);box-shadow:0 5px 16px rgba(0,0,0,.2)}
+.match-card.selected{border-color:var(--orange);background:#FFF3E0;transform:scale(1.04)}
+.match-card.correct{background:linear-gradient(135deg,#81C784,#4CAF50);color:#fff;cursor:default;border-color:transparent}
+.match-card.wrong{animation:shake .35s;border-color:var(--red)}
+@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-8px)}40%{transform:translateX(8px)}60%{transform:translateX(-5px)}80%{transform:translateX(5px)}}
+.match-card.disabled{opacity:.35;cursor:not-allowed}
+.match-score-badge{font-size:22px;font-weight:800;color:var(--orange);text-align:center}
+
+/* ════════════════════════════════
+   GAME 3 — 景色填词
+════════════════════════════════ */
+#game3{background:linear-gradient(180deg,#FF7043 0%,#FF8C00 20%,#FFC107 40%,#FFD54F 55%,#90CAF9 80%,#1565C0 100%)}
+.fill-paragraph{background:rgba(255,255,255,.92);border-radius:18px;padding:20px 24px;font-size:19px;line-height:2.2;color:var(--dark);width:100%;font-weight:500;letter-spacing:.5px}
+.blank{display:inline-block;min-width:88px;padding:4px 10px;border-radius:8px;border:2px dashed #999;cursor:pointer;text-align:center;font-weight:800;vertical-align:bottom;color:#666;transition:border-color .2s,background .2s;background:rgba(255,255,255,.7)}
+.blank.selected{border-color:var(--orange);background:#FFF3E0;color:var(--orange)}
+.blank.filled{border-color:var(--teal);background:rgba(46,196,182,.1);color:var(--teal)}
+.blank.correct{border-color:var(--green);background:rgba(76,175,80,.15);color:var(--green);cursor:default}
+.blank.wrong{border-color:var(--red);background:rgba(244,67,54,.1);color:var(--red);animation:shake .35s}
+.word-bank{background:rgba(255,255,255,.85);border-radius:16px;padding:16px;width:100%;display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.bank-word{padding:10px 20px;border-radius:12px;background:#fff;border:2px solid #ddd;font-size:17px;font-weight:700;cursor:pointer;transition:transform .15s,border-color .2s,background .2s;color:var(--dark);box-shadow:0 2px 8px rgba(0,0,0,.1)}
+.bank-word:hover{transform:translateY(-2px);border-color:var(--orange)}
+.bank-word.selected{border-color:var(--orange);background:#FFF3E0;color:var(--orange);transform:scale(1.06)}
+.bank-word.used{opacity:.25;cursor:not-allowed;pointer-events:none}
+
+/* ════════════════════════════════
+   GAME 4 — 故事排序
+════════════════════════════════ */
+#game4{background:linear-gradient(160deg,#E3F2FD 0%,#BBDEFB 50%,#90CAF9 100%)}
+.sort-list{width:100%;display:flex;flex-direction:column;gap:10px}
+.sort-card{display:flex;align-items:center;gap:14px;padding:14px 18px;background:#fff;border-radius:16px;cursor:pointer;box-shadow:0 2px 10px rgba(0,0,0,.1);border:3px solid transparent;transition:transform .15s,border-color .15s,box-shadow .15s;font-size:16px;font-weight:600;color:var(--dark);line-height:1.4}
+.sort-card:hover{transform:translateX(4px);box-shadow:0 4px 16px rgba(0,0,0,.15)}
+.sort-card.selected{border-color:var(--blue);background:#E3F2FD;transform:scale(1.02)}
+.sort-card.correct{border-color:var(--green);background:rgba(76,175,80,.08);cursor:default}
+.sort-card.wrong{border-color:var(--red);background:rgba(244,67,54,.08);animation:shake .35s}
+.sort-num{min-width:36px;height:36px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;flex-shrink:0}
+.sort-card.correct .sort-num{background:var(--green)}
+.sort-card.wrong .sort-num{background:var(--red)}
+.sort-icon{font-size:24px;flex-shrink:0}
+.sort-btns{display:flex;gap:14px;margin-top:4px;flex-wrap:wrap;justify-content:center}
+.attempts-left{font-size:15px;color:rgba(0,0,0,.5);font-weight:600}
+
+/* ════════════════════════════════
+   RESULT SCREEN
+════════════════════════════════ */
+#result-screen{background:linear-gradient(160deg,#1a237e 0%,#283593 40%,#1565C0 70%,#0288D1 100%);justify-content:center}
+.result-box{background:rgba(255,255,255,.1);backdrop-filter:blur(12px);border-radius:30px;padding:40px 50px;text-align:center;max-width:560px;width:90%;border:2px solid rgba(255,255,255,.2);box-shadow:0 8px 40px rgba(0,0,0,.3)}
+.result-title{font-size:42px;font-weight:900;color:#fff;margin-bottom:8px;text-shadow:0 2px 12px rgba(0,0,0,.4)}
+.result-subtitle{font-size:18px;color:rgba(255,255,255,.8);margin-bottom:28px}
+.result-stars{font-size:48px;margin:20px 0;letter-spacing:8px}
+.result-score{font-size:52px;font-weight:900;color:var(--yellow);margin:10px 0;text-shadow:0 2px 8px rgba(0,0,0,.3)}
+.result-label{font-size:18px;color:rgba(255,255,255,.7);margin-bottom:20px}
+.result-badges{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;margin:16px 0}
+.badge{display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 16px;background:rgba(255,255,255,.15);border-radius:16px;border:2px solid rgba(255,255,255,.2)}
+.badge-icon{font-size:30px}
+.badge-name{font-size:13px;font-weight:700;color:rgba(255,255,255,.9)}
+.result-msg{font-size:17px;color:rgba(255,255,255,.9);line-height:1.7;background:rgba(255,255,255,.1);border-radius:14px;padding:16px 20px;margin:16px 0}
+.result-btns{display:flex;gap:16px;justify-content:center;margin-top:20px;flex-wrap:wrap}
+
+/* ════════════════════════════════
+   OVERLAY / WIN PANEL
+════════════════════════════════ */
+.game-win-overlay{position:fixed;inset:0;background:rgba(0,0,0,.6);display:none;align-items:center;justify-content:center;z-index:200;flex-direction:column;gap:20px}
+.game-win-overlay.show{display:flex}
+.win-card{background:#fff;border-radius:28px;padding:36px 48px;text-align:center;max-width:440px;width:90%;box-shadow:0 10px 50px rgba(0,0,0,.35);animation:popIn .4s cubic-bezier(.175,.885,.32,1.275)}
+@keyframes popIn{from{transform:scale(0.5);opacity:0}to{transform:scale(1);opacity:1}}
+.win-emoji{font-size:60px;display:block;margin-bottom:12px}
+.win-title{font-size:30px;font-weight:900;color:var(--dark)}
+.win-msg{font-size:17px;color:#666;margin:10px 0 20px;line-height:1.6}
+.stars-earned{font-size:44px;margin:10px 0;letter-spacing:6px}
+
+/* ── ANIMATIONS ── */
+@keyframes bounceIn{from{transform:scale(0)}to{transform:scale(1)}}
+@keyframes fadeSlideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeSlideUp .4s ease both}
+</style>
+</head>
+<body>
+
+<!-- ════ WELCOME ════ -->
+<div id="welcome" class="screen active">
+  <div class="w-sky" id="starField"></div>
+  <div class="w-sea"><div class="wave"></div></div>
+  <div class="w-ground"></div>
+  <div class="tent">
+    <svg viewBox="0 0 120 100"><polygon points="60,10 5,90 115,90" fill="#E65100"/><polygon points="60,10 5,90 60,90" fill="#BF360C"/><rect x="45" y="65" width="30" height="25" rx="4" fill="#212121"/><polygon points="60,10 30,90 90,90" fill="none" stroke="#FF8C00" stroke-width="2" opacity=".4"/></svg>
+  </div>
+  <div class="fire">
+    <div class="flame"></div>
+    <div class="ember"></div>
+  </div>
+  <div class="w-title fade-in">
+    <h1>🏕️ 露营大冒险</h1>
+    <p>五年级 · 第一课《露营记》互动游戏</p>
+  </div>
+  <div class="w-btns fade-in">
+    <button class="btn btn-orange" onclick="showMap()">🎮 开始冒险</button>
+    <button class="btn btn-teal" onclick="showInstructions()">📖 游戏说明</button>
+  </div>
+</div>
+
+<!-- ════ MAP ════ -->
+<div id="map-screen" class="screen">
+  <div class="hud">
+    <span class="hud-title">🗺️ 露营地图</span>
+    <span class="hud-score" id="map-total-score">总分：0 / 400</span>
+  </div>
+  <div class="map-container">
+    <div class="map-bg">
+      <div class="map-sea"></div>
+      <div class="map-forest"></div>
+    </div>
+    <svg class="map-path" xmlns="http://www.w3.org/2000/svg">
+      <path d="M 185 130 Q 300 160 430 130" stroke="rgba(255,255,255,.6)" stroke-width="4" fill="none" stroke-dasharray="10,6"/>
+      <path d="M 185 280 Q 300 310 600 360" stroke="rgba(255,255,255,.6)" stroke-width="4" fill="none" stroke-dasharray="10,6"/>
+      <path d="M 185 130 Q 185 200 185 280" stroke="rgba(255,255,255,.6)" stroke-width="4" fill="none" stroke-dasharray="10,6"/>
+    </svg>
+    <div id="z1" class="zone-card" onclick="startGame(1)">
+      <div class="zone-icon">🏃</div>
+      <div class="zone-num">1</div>
+      <div class="zone-name">两人三脚</div>
+      <div class="zone-stars" id="zs1"></div>
+    </div>
+    <div id="z2" class="zone-card locked" onclick="startGame(2)">
+      <div class="zone-icon">📚</div>
+      <div class="zone-num">2</div>
+      <div class="zone-name">词语配对</div>
+      <div class="zone-stars" id="zs2"></div>
+    </div>
+    <div id="z3" class="zone-card locked" onclick="startGame(3)">
+      <div class="zone-icon">🌅</div>
+      <div class="zone-num">3</div>
+      <div class="zone-name">景色填词</div>
+      <div class="zone-stars" id="zs3"></div>
+    </div>
+    <div id="z4" class="zone-card locked" onclick="startGame(4)">
+      <div class="zone-icon">🔢</div>
+      <div class="zone-num">4</div>
+      <div class="zone-name">故事排序</div>
+      <div class="zone-stars" id="zs4"></div>
+    </div>
+    <div style="position:absolute;bottom:14px;left:50%;transform:translateX(-50%);text-align:center">
+      <div class="map-progress" id="map-hint">👆 点击关卡1开始！</div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ GAME 1 — 两人三脚 ════ -->
+<div id="game1" class="screen">
+  <div class="hud">
+    <button class="btn btn-sm" style="background:rgba(255,255,255,.3);color:#fff;padding:8px 18px;font-size:15px" onclick="showMap()">← 地图</button>
+    <span class="hud-title">🏃 两人三脚竞赛</span>
+    <span class="hud-score" id="g1-score-display">得分：0</span>
+  </div>
+  <div class="game-body">
+    <div class="game-instruction">
+      <strong>游戏规则：</strong>交替点击 <strong>左脚 ←</strong> 和 <strong>右脚 →</strong>，不能连续踩同一只脚！先到终点就是冠军！<br>
+      <small style="color:#888">💡 考考你：两人三脚需要什么精神？</small>
+    </div>
+    <div class="race-timer" id="g1-timer">⏱ 30秒</div>
+    <div class="race-track">
+      <div style="font-size:13px;font-weight:700;color:rgba(0,0,0,.5);margin-bottom:6px;padding:0 8px">你的队伍</div>
+      <div class="track-lane" id="lane1">
+        <div class="runner" id="runner1" style="left:8%">🏃‍♂️</div>
+      </div>
+      <div style="font-size:13px;font-weight:700;color:rgba(0,0,0,.5);margin:10px 0 6px;padding:0 8px">对手队伍</div>
+      <div class="track-lane" id="lane2">
+        <div class="runner" id="runner2" style="left:8%">🏃‍♀️</div>
+      </div>
+    </div>
+    <div class="next-foot">
+      应踩：<div class="foot-indicator" id="nextFoot" style="background:linear-gradient(135deg,#FF6B35,#E64A19)">←</div>
+    </div>
+    <div class="race-status" id="g1-status">准备好了吗？</div>
+    <div class="foot-btns">
+      <button class="foot-btn" id="btn-left" onclick="pressfoot('L')">← 左脚</button>
+      <button class="foot-btn" id="btn-right" onclick="pressfoot('R')">右脚 →</button>
+    </div>
+    <button class="btn btn-yellow" id="g1-start-btn" onclick="startRace()" style="margin-top:4px">🏁 出发！</button>
+  </div>
+</div>
+
+<!-- ════ GAME 2 — 词语配对 ════ -->
+<div id="game2" class="screen">
+  <div class="hud">
+    <button class="btn btn-sm" style="background:rgba(0,0,0,.2);color:#fff;padding:8px 18px;font-size:15px" onclick="showMap()">← 地图</button>
+    <span class="hud-title">📚 词语配对</span>
+    <span class="hud-score" id="g2-score-display">0 / 5</span>
+  </div>
+  <div class="game-body">
+    <div class="game-instruction">
+      <strong>游戏规则：</strong>先点击左边的<strong>词语</strong>，再点击右边对应的<strong>意思</strong>，把所有词语配对！
+    </div>
+    <div class="match-arena">
+      <div>
+        <div class="match-col-title">词语</div>
+        <div class="match-words" id="match-words"></div>
+      </div>
+      <div>
+        <div class="match-col-title">意思</div>
+        <div class="match-defs" id="match-defs"></div>
+      </div>
+    </div>
+    <div class="match-score-badge" id="g2-progress">已配对：0 / 5</div>
+  </div>
+</div>
+
+<!-- ════ GAME 3 — 景色填词 ════ -->
+<div id="game3" class="screen">
+  <div class="hud">
+    <button class="btn btn-sm" style="background:rgba(0,0,0,.2);color:#fff;padding:8px 18px;font-size:15px" onclick="showMap()">← 地图</button>
+    <span class="hud-title">🌅 景色填词</span>
+    <span class="hud-score" id="g3-score-display">0 / 5</span>
+  </div>
+  <div class="game-body">
+    <div class="game-instruction">
+      <strong>游戏规则：</strong>先从下方<strong>词语库</strong>点选词语，再点击文章中的空格填入。还原课文中的美丽景色！
+    </div>
+    <div class="fill-paragraph" id="fill-para"></div>
+    <div style="font-size:15px;font-weight:700;color:rgba(255,255,255,.9);align-self:flex-start;text-shadow:0 1px 3px rgba(0,0,0,.3)">📦 词语库</div>
+    <div class="word-bank" id="word-bank"></div>
+    <button class="btn btn-green" id="g3-check-btn" onclick="checkFill()">✅ 检查答案</button>
+  </div>
+</div>
+
+<!-- ════ GAME 4 — 故事排序 ════ -->
+<div id="game4" class="screen">
+  <div class="hud">
+    <button class="btn btn-sm" style="background:rgba(0,0,0,.2);color:#fff;padding:8px 18px;font-size:15px" onclick="showMap()">← 地图</button>
+    <span class="hud-title">🔢 故事排序</span>
+    <span class="hud-score" id="g4-score-display">机会：3</span>
+  </div>
+  <div class="game-body">
+    <div class="game-instruction">
+      <strong>游戏规则：</strong>课文中的事件被打乱了！先点选一张卡，再点另一张卡来<strong>交换位置</strong>，把露营故事按正确顺序排好！
+    </div>
+    <div class="sort-list" id="sort-list"></div>
+    <div class="sort-btns">
+      <button class="btn btn-blue" onclick="checkSort()">🔍 检查答案</button>
+      <button class="btn btn-sm" style="background:rgba(0,0,0,.15);color:#333" onclick="resetSort()">🔄 重新排列</button>
+    </div>
+    <div class="attempts-left" id="g4-attempts">还有 3 次机会</div>
+  </div>
+</div>
+
+<!-- ════ RESULT ════ -->
+<div id="result-screen" class="screen">
+  <div class="result-box fade-in">
+    <div class="result-title">🎉 冒险完成！</div>
+    <div class="result-subtitle">《露营记》学习任务全部完成</div>
+    <div class="result-stars" id="result-stars"></div>
+    <div class="result-score" id="result-score"></div>
+    <div class="result-label">总积分</div>
+    <div class="result-badges" id="result-badges"></div>
+    <div class="result-msg" id="result-msg"></div>
+    <div class="result-btns">
+      <button class="btn btn-yellow" onclick="restartAll()">🔄 再玩一次</button>
+      <button class="btn btn-teal" onclick="showMap()">🗺️ 返回地图</button>
+    </div>
+  </div>
+</div>
+
+<!-- Win overlay -->
+<div class="game-win-overlay" id="win-overlay">
+  <div class="win-card">
+    <span class="win-emoji" id="win-emoji">🎊</span>
+    <div class="win-title" id="win-title">太棒了！</div>
+    <div class="stars-earned" id="win-stars">⭐⭐⭐</div>
+    <div class="win-msg" id="win-msg"></div>
+    <button class="btn btn-orange" id="win-next-btn">下一关 →</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+<!-- Confetti -->
+<canvas id="confetti-canvas"></canvas>
+
+<script>
+// ════════════════════════════════
+// AUDIO
+// ════════════════════════════════
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let actx;
+function getACtx(){if(!actx){try{actx=new AudioCtx()}catch(e){}}return actx}
+function beep(freq,dur,type='sine',vol=.3){
+  const c=getACtx(); if(!c) return;
+  const o=c.createOscillator(), g=c.createGain();
+  o.connect(g); g.connect(c.destination);
+  o.type=type; o.frequency.value=freq;
+  g.gain.setValueAtTime(vol,c.currentTime);
+  g.gain.exponentialRampToValueAtTime(.001,c.currentTime+dur);
+  o.start(c.currentTime); o.stop(c.currentTime+dur);
+}
+function playCorrect(){beep(880,.12);setTimeout(()=>beep(1108,.18),80)}
+function playWrong(){beep(220,.3,'sawtooth',.2)}
+function playWin(){[523,659,784,1046].forEach((f,i)=>setTimeout(()=>beep(f,.3),i*100))}
+function playStep(){beep(660,.08,'square',.15)}
+
+// ════════════════════════════════
+// STATE
+// ════════════════════════════════
+const state = {
+  scores: [0, 0, 0, 0],       // scores per game (0-100 each)
+  completed: [false,false,false,false],
+  stars: [0, 0, 0, 0],
+  currentScreen: 'welcome'
+};
+
+// ════════════════════════════════
+// SCREEN MANAGEMENT
+// ════════════════════════════════
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  state.currentScreen = id;
+}
+
+function showMap(){
+  stopRace();
+  updateMapUI();
+  showScreen('map-screen');
+}
+
+function showInstructions(){
+  showToast('游戏共4关：\n①两人三脚 ②词语配对\n③景色填词 ④故事排序\n按顺序解锁，加油！',4000);
+}
+
+// ════════════════════════════════
+// WELCOME — generate stars
+// ════════════════════════════════
+(function generateStars(){
+  const sf = document.getElementById('starField');
+  for(let i=0;i<60;i++){
+    const s=document.createElement('div');
+    s.className='star';
+    const sz=Math.random()*2.5+1;
+    s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*90}%;left:${Math.random()*100}%;animation-delay:${Math.random()*3}s;animation-duration:${1.5+Math.random()*2}s`;
+    sf.appendChild(s);
+  }
+})();
+
+// ════════════════════════════════
+// MAP UI
+// ════════════════════════════════
+function updateMapUI(){
+  let total=0;
+  state.scores.forEach((s,i)=>{
+    total+=s;
+    const zs=document.getElementById(`zs${i+1}`);
+    const z=document.getElementById(`z${i+1}`);
+    if(state.completed[i]){
+      const st=state.stars[i];
+      zs.textContent='⭐'.repeat(st)+'☆'.repeat(3-st);
+      z.classList.add('done'); z.classList.remove('locked');
+    }
+    // unlock next
+    if(i>0){
+      if(state.completed[i-1]){
+        z.classList.remove('locked');
+      }
+    }
+  });
+  document.getElementById('map-total-score').textContent=`总分：${total} / 400`;
+  const done=state.completed.filter(Boolean).length;
+  const hints=['👆 点击关卡1开始！','🎉 关卡1完成！挑战关卡2！','🔥 两关完成！继续加油！','✨ 三关完成！最后一关！','🏆 全部完成！查看成绩！'];
+  document.getElementById('map-hint').textContent=hints[done]||hints[0];
+  if(done===4) document.getElementById('map-hint').onclick=()=>showResult();
+}
+
+function startGame(n){
+  const z=document.getElementById(`z${n}`);
+  if(z.classList.contains('locked')){showToast('🔒 请先完成上一关！');return;}
+  if(n===1) initGame1();
+  else if(n===2) initGame2();
+  else if(n===3) initGame3();
+  else if(n===4) initGame4();
+  showScreen(`game${n}`);
+}
+
+// ════════════════════════════════
+// GAME 1 — 两人三脚
+// ════════════════════════════════
+let raceActive=false, raceTimer=null, raceTime=30;
+let playerPos=0, opponentPos=0;
+let lastFoot=null; // 'L' or 'R', player must alternate
+let correctSteps=0, wrongSteps=0;
+let opponentInterval=null;
+
+function initGame1(){
+  raceActive=false; raceTime=30; playerPos=0; opponentPos=0;
+  lastFoot=null; correctSteps=0; wrongSteps=0;
+  clearInterval(raceTimer); clearInterval(opponentInterval);
+  document.getElementById('runner1').style.left='8%';
+  document.getElementById('runner2').style.left='8%';
+  document.getElementById('g1-timer').textContent='⏱ 30秒';
+  document.getElementById('g1-status').textContent='准备好了吗？';
+  document.getElementById('g1-start-btn').style.display='inline-flex';
+  document.getElementById('btn-left').disabled=true;
+  document.getElementById('btn-right').disabled=true;
+  updateNextFoot('L');
+  document.getElementById('g1-score-display').textContent='得分：0';
+}
+
+function startRace(){
+  raceActive=true;
+  document.getElementById('g1-start-btn').style.display='none';
+  document.getElementById('btn-left').disabled=false;
+  document.getElementById('btn-right').disabled=false;
+  document.getElementById('g1-status').textContent='加油！交替踩脚！';
+  // countdown
+  raceTimer=setInterval(()=>{
+    raceTime--;
+    document.getElementById('g1-timer').textContent=`⏱ ${raceTime}秒`;
+    if(raceTime<=0){endRace('time');}
+  },1000);
+  // opponent moves at steady pace: 10 steps in ~22s
+  opponentInterval=setInterval(()=>{
+    if(!raceActive) return;
+    opponentPos=Math.min(opponentPos+10, 82);
+    document.getElementById('runner2').style.left=(8+opponentPos*.74)+'%';
+    if(opponentPos>=82){endRace('opponent');}
+  },2200);
+}
+
+function pressfoot(side){
+  if(!raceActive) return;
+  // Must alternate
+  if(lastFoot===side){
+    // wrong — stumble
+    wrongSteps++;
+    document.getElementById('runner1').classList.add('stumble');
+    setTimeout(()=>document.getElementById('runner1').classList.remove('stumble'),400);
+    document.getElementById('g1-status').textContent='😬 两只脚要交替踩！';
+    playWrong();
+    // pause 0.5s
+    document.getElementById('btn-left').disabled=true;
+    document.getElementById('btn-right').disabled=true;
+    setTimeout(()=>{
+      if(raceActive){
+        document.getElementById('btn-left').disabled=false;
+        document.getElementById('btn-right').disabled=false;
+        document.getElementById('g1-status').textContent='加油！交替踩脚！';
+      }
+    },600);
+    return;
+  }
+  // correct step
+  lastFoot=side;
+  correctSteps++;
+  playerPos=Math.min(playerPos+10, 82);
+  document.getElementById('runner1').style.left=(8+playerPos*.74)+'%';
+  playStep();
+  updateNextFoot(side==='L'?'R':'L');
+  const score=Math.round((correctSteps/(correctSteps+wrongSteps))*100);
+  document.getElementById('g1-score-display').textContent=`得分：${score}`;
+  document.getElementById('g1-status').textContent=side==='L'?'👣 左脚！好！':'👣 右脚！棒！';
+  if(playerPos>=82){endRace('player');}
+}
+
+function updateNextFoot(next){
+  const el=document.getElementById('nextFoot');
+  if(next==='L'){
+    el.style.background='linear-gradient(135deg,#FF6B35,#E64A19)';
+    el.textContent='←';
+  } else {
+    el.style.background='linear-gradient(135deg,#2EC4B6,#00897B)';
+    el.textContent='→';
+  }
+}
+
+function stopRace(){
+  raceActive=false;
+  clearInterval(raceTimer); clearInterval(opponentInterval);
+}
+
+function endRace(who){
+  stopRace();
+  document.getElementById('btn-left').disabled=true;
+  document.getElementById('btn-right').disabled=true;
+  let sc, stars, emoji, msg;
+  if(who==='player'){
+    sc=100; stars=3; emoji='🏆';
+    msg='太厉害了！你们齐心协力、互相配合，第一个冲过终点！\n\n💡 <b>齐心协力</b> = 大家团结一心，共同努力\n💡 <b>互相配合</b> = 互相协调、合作';
+    document.getElementById('g1-status').textContent='🏆 你赢了！冠军！';
+    playWin();
+  } else if(who==='opponent'){
+    sc=Math.max(40, Math.round((playerPos/82)*80));
+    stars=sc>=70?2:1; emoji='😊';
+    msg='对手先到达终点，不过你表现不错！\n记住：两人三脚要<b>互相配合、齐心协力</b>才能获胜！';
+    document.getElementById('g1-status').textContent='😊 继续练习！';
+  } else {
+    sc=Math.max(30, Math.round((playerPos/82)*70));
+    stars=sc>=60?2:1; emoji='⏰';
+    msg='时间到！注意：两人三脚需要<b>互相配合</b>，左右交替才能走得更快！';
+    document.getElementById('g1-status').textContent='⏰ 时间到！';
+  }
+  setTimeout(()=>showWin(sc,stars,emoji,'两人三脚竞赛',msg,2),800);
+}
+
+// ════════════════════════════════
+// GAME 2 — 词语配对
+// ════════════════════════════════
+const vocabData = [
+  {word:'狼吞虎咽', def:'吃东西又猛又急，像狼和虎一样'},
+  {word:'一望无际', def:'广阔得看不到边际'},
+  {word:'四脚朝天', def:'摔倒时四脚朝上的狼狈样子'},
+  {word:'齐心协力', def:'大家团结一心，共同努力'},
+  {word:'充实',     def:'生活过得丰富、很有意义'}
+];
+let selectedWord=null, matchedCount=0;
+
+function initGame2(){
+  matchedCount=0; selectedWord=null;
+  document.getElementById('g2-score-display').textContent='0 / 5';
+  document.getElementById('g2-progress').textContent='已配对：0 / 5';
+  // shuffle defs
+  const shuffledDefs=[...vocabData].sort(()=>Math.random()-.5);
+  const wContainer=document.getElementById('match-words');
+  const dContainer=document.getElementById('match-defs');
+  wContainer.innerHTML=''; dContainer.innerHTML='';
+  vocabData.forEach((item,i)=>{
+    const w=document.createElement('div');
+    w.className='match-card'; w.textContent=item.word;
+    w.dataset.idx=i; w.onclick=()=>selectWord(w,i);
+    wContainer.appendChild(w);
+  });
+  shuffledDefs.forEach((item,i)=>{
+    const d=document.createElement('div');
+    d.className='match-card'; d.textContent=item.def;
+    d.dataset.word=item.word; d.onclick=()=>selectDef(d);
+    dContainer.appendChild(d);
+  });
+}
+
+function selectWord(el,idx){
+  if(el.classList.contains('correct')||el.classList.contains('disabled')) return;
+  document.querySelectorAll('#match-words .match-card').forEach(c=>{
+    if(!c.classList.contains('correct')) c.classList.remove('selected');
+  });
+  el.classList.add('selected');
+  selectedWord={el,idx,word:vocabData[idx].word};
+}
+
+function selectDef(el){
+  if(!selectedWord) {showToast('👈 先点左边的词语！');return;}
+  if(el.classList.contains('correct')||el.classList.contains('disabled')) return;
+  const correct = el.dataset.word === selectedWord.word;
+  if(correct){
+    el.classList.add('correct'); selectedWord.el.classList.add('correct');
+    selectedWord.el.classList.remove('selected');
+    matchedCount++;
+    playCorrect();
+    document.getElementById('g2-progress').textContent=`已配对：${matchedCount} / 5`;
+    document.getElementById('g2-score-display').textContent=`${matchedCount} / 5`;
+    selectedWord=null;
+    if(matchedCount===5){
+      setTimeout(()=>{
+        const sc=100, stars=3;
+        showWin(sc,stars,'🎊','词语配对','全部配对成功！\n\n这些词语你都记住了吗？\n<b>狼吞虎咽、一望无际、四脚朝天</b>\n<b>齐心协力、充实</b>',3);
+        playWin();
+      },600);
+    }
+  } else {
+    el.classList.add('wrong'); selectedWord.el.classList.add('wrong');
+    playWrong();
+    setTimeout(()=>{
+      el.classList.remove('wrong','selected');
+      selectedWord.el.classList.remove('wrong','selected');
+      selectedWord=null;
+    },500);
+  }
+}
+
+// ════════════════════════════════
+// GAME 3 — 景色填词
+// ════════════════════════════════
+const fillData = {
+  segments:[
+    {type:'text',text:'只见大海'},
+    {type:'blank',id:0,answer:'一望无际'},
+    {type:'text',text:'，海面被夕阳染成了一片'},
+    {type:'blank',id:1,answer:'金黄'},
+    {type:'text',text:'。'},
+    {type:'blank',id:2,answer:'清凉'},
+    {type:'text',text:'的海风迎面吹来，高大的椰树在晚风中'},
+    {type:'blank',id:3,answer:'轻轻地'},
+    {type:'text',text:'摇摆，黄昏时的海边，景色真'},
+    {type:'blank',id:4,answer:'迷人'},
+    {type:'text',text:'啊！'}
+  ],
+  wordBank:['一望无际','金黄','清凉','轻轻地','迷人','波涛汹涌','温暖']
+};
+let fillSelected=null; // selected bank word
+let fillAnswers={}; // blank id -> word
+
+function initGame3(){
+  fillSelected=null; fillAnswers={};
+  document.getElementById('g3-score-display').textContent='0 / 5';
+  document.getElementById('g3-check-btn').style.display='inline-flex';
+  // Build paragraph
+  const para=document.getElementById('fill-para');
+  para.innerHTML='';
+  fillData.segments.forEach(seg=>{
+    if(seg.type==='text'){
+      para.appendChild(document.createTextNode(seg.text));
+    } else {
+      const sp=document.createElement('span');
+      sp.className='blank'; sp.dataset.id=seg.id; sp.textContent='___';
+      sp.onclick=()=>clickBlank(sp,seg.id,seg.answer);
+      para.appendChild(sp);
+    }
+  });
+  // Build word bank
+  const wb=document.getElementById('word-bank');
+  wb.innerHTML='';
+  const shuffled=[...fillData.wordBank].sort(()=>Math.random()-.5);
+  shuffled.forEach(w=>{
+    const el=document.createElement('div');
+    el.className='bank-word'; el.textContent=w; el.dataset.word=w;
+    el.onclick=()=>selectBankWord(el,w);
+    wb.appendChild(el);
+  });
+}
+
+function selectBankWord(el,w){
+  if(el.classList.contains('used')) return;
+  document.querySelectorAll('.bank-word').forEach(e=>e.classList.remove('selected'));
+  if(fillSelected===w){fillSelected=null; return;}
+  el.classList.add('selected');
+  fillSelected=w;
+}
+
+function clickBlank(el,id,answer){
+  if(el.classList.contains('correct')) return;
+  if(fillSelected){
+    // fill the blank
+    const prev=fillAnswers[id];
+    // unuse previous word if any
+    if(prev){
+      document.querySelectorAll('.bank-word').forEach(e=>{
+        if(e.dataset.word===prev) e.classList.remove('used');
+      });
+    }
+    fillAnswers[id]=fillSelected;
+    el.textContent=fillSelected;
+    el.classList.add('filled'); el.classList.remove('wrong');
+    // mark bank word as used
+    document.querySelectorAll('.bank-word').forEach(e=>{
+      if(e.dataset.word===fillSelected){e.classList.add('used');e.classList.remove('selected');}
+    });
+    fillSelected=null;
+    const filled=Object.keys(fillAnswers).length;
+    document.getElementById('g3-score-display').textContent=`${filled} / 5`;
+  } else {
+    // clear this blank
+    if(fillAnswers[id]){
+      const w=fillAnswers[id];
+      document.querySelectorAll('.bank-word').forEach(e=>{
+        if(e.dataset.word===w) e.classList.remove('used');
+      });
+      delete fillAnswers[id];
+      el.textContent='___'; el.classList.remove('filled','wrong');
+      const filled=Object.keys(fillAnswers).length;
+      document.getElementById('g3-score-display').textContent=`${filled} / 5`;
+    }
+  }
+}
+
+function checkFill(){
+  let correct=0, total=0;
+  fillData.segments.forEach(seg=>{
+    if(seg.type!=='blank') return;
+    total++;
+    const el=document.querySelector(`.blank[data-id='${seg.id}']`);
+    if(fillAnswers[seg.id]===seg.answer){correct++;el.classList.add('correct');el.classList.remove('wrong','filled');}
+    else if(fillAnswers[seg.id]){el.classList.add('wrong');el.classList.remove('filled');}
+  });
+  document.getElementById('g3-score-display').textContent=`${correct} / 5`;
+  if(correct===5){
+    playWin();
+    document.getElementById('g3-check-btn').style.display='none';
+    setTimeout(()=>{
+      showWin(100,3,'🌅','景色填词',
+        '全对！你把美丽的夕阳景色还原了！\n\n课文这样写海边黄昏：\n<b>一望无际</b>的大海，<b>金黄</b>的海面，<b>清凉</b>的海风，椰树<b>轻轻地</b>摇摆，景色<b>迷人</b>！',
+        4);
+    },700);
+  } else {
+    playWrong();
+    showToast(`✅ 答对 ${correct} 个，还有 ${5-correct} 个需要修改！`,2500);
+    // free wrong ones
+    setTimeout(()=>{
+      fillData.segments.forEach(seg=>{
+        if(seg.type!=='blank') return;
+        const el=document.querySelector(`.blank[data-id='${seg.id}']`);
+        if(el.classList.contains('wrong')){
+          const w=fillAnswers[seg.id];
+          document.querySelectorAll('.bank-word').forEach(e=>{if(e.dataset.word===w)e.classList.remove('used');});
+          delete fillAnswers[seg.id];
+          el.textContent='___'; el.classList.remove('wrong','filled');
+        }
+      });
+      const filled=Object.keys(fillAnswers).length;
+      document.getElementById('g3-score-display').textContent=`${filled} / 5`;
+    },1200);
+  }
+}
+
+// ════════════════════════════════
+// GAME 4 — 故事排序
+// ════════════════════════════════
+const storyEvents = [
+  {id:1, text:'到达营地，进行"两人三脚"竞赛，摔了个四脚朝天',  icon:'🏃', correctPos:0},
+  {id:2, text:'排队冲凉，轮到我时已经是晚餐时间',              icon:'🚿', correctPos:1},
+  {id:3, text:'狼吞虎咽地吃晚餐，把饭菜吃了个精光',            icon:'🍱', correctPos:2},
+  {id:4, text:'走到沙滩，欣赏夕阳把大海染成一片金黄',           icon:'🌅', correctPos:3},
+  {id:5, text:'第二天上午，进行攀岩大比拼',                   icon:'🧗', correctPos:4},
+  {id:6, text:'吃完午餐，愉快地结束了这次露营',                icon:'🎒', correctPos:5}
+];
+let sortOrder=[], selectedSortIdx=null, sortAttempts=3;
+
+function initGame4(){
+  sortAttempts=3; selectedSortIdx=null;
+  sortOrder=[...storyEvents].sort(()=>Math.random()-.5).map(e=>({...e}));
+  document.getElementById('g4-attempts').textContent=`还有 ${sortAttempts} 次机会`;
+  document.getElementById('g4-score-display').textContent=`机会：${sortAttempts}`;
+  renderSortList();
+}
+
+function renderSortList(){
+  const list=document.getElementById('sort-list');
+  list.innerHTML='';
+  sortOrder.forEach((item,i)=>{
+    const card=document.createElement('div');
+    card.className='sort-card'; card.dataset.idx=i;
+    card.innerHTML=`<div class="sort-num">${i+1}</div><div class="sort-icon">${item.icon}</div><div style="flex:1">${item.text}</div>`;
+    card.onclick=()=>clickSortCard(i);
+    list.appendChild(card);
+  });
+}
+
+function clickSortCard(idx){
+  const cards=document.querySelectorAll('.sort-card');
+  if(cards[idx].classList.contains('correct')) return;
+  if(selectedSortIdx===null){
+    selectedSortIdx=idx;
+    cards[idx].classList.add('selected');
+  } else if(selectedSortIdx===idx){
+    cards[idx].classList.remove('selected');
+    selectedSortIdx=null;
+  } else {
+    // swap
+    [sortOrder[selectedSortIdx],sortOrder[idx]]=[sortOrder[idx],sortOrder[selectedSortIdx]];
+    cards[selectedSortIdx].classList.remove('selected');
+    selectedSortIdx=null;
+    renderSortList();
+    playStep();
+  }
+}
+
+function resetSort(){
+  selectedSortIdx=null;
+  sortOrder=[...storyEvents].sort(()=>Math.random()-.5).map(e=>({...e}));
+  renderSortList();
+}
+
+function checkSort(){
+  sortAttempts--;
+  let correct=0;
+  sortOrder.forEach((item,i)=>{
+    const cards=document.querySelectorAll('.sort-card');
+    if(item.correctPos===i){
+      correct++;
+      cards[i].classList.add('correct'); cards[i].classList.remove('wrong');
+    } else {
+      cards[i].classList.add('wrong'); cards[i].classList.remove('correct');
+    }
+  });
+  document.getElementById('g4-attempts').textContent=`还有 ${Math.max(0,sortAttempts)} 次机会`;
+  document.getElementById('g4-score-display').textContent=`机会：${sortAttempts}`;
+  if(correct===6){
+    playWin();
+    setTimeout(()=>{
+      const sc=sortAttempts>=2?100:sortAttempts===1?80:60;
+      const stars=sortAttempts>=2?3:sortAttempts===1?2:1;
+      showWin(sc,stars,'📖','故事排序',
+        '排序正确！你完全理解了《露营记》的故事顺序！\n\n<b>露营经历：</b>两人三脚→冲凉→吃饭→沙滩→攀岩→结束\n这次露营让主人公感到非常<b>充实</b>！',null);
+      playWin();
+    },700);
+  } else {
+    playWrong();
+    if(sortAttempts<=0){
+      showToast('提示：按时间顺序：下午→傍晚→晚上→第二天→结束',4000);
+      setTimeout(()=>{
+        // reveal answer
+        sortOrder=[...storyEvents].sort((a,b)=>a.correctPos-b.correctPos);
+        renderSortList();
+        document.querySelectorAll('.sort-card').forEach((c,i)=>c.classList.add('correct'));
+        const sc=40, stars=1;
+        setTimeout(()=>showWin(sc,stars,'💪','故事排序','已显示正确答案，记住这个顺序哦！\n再想想露营这两天发生了什么事情。',null),1500);
+      },2000);
+    } else {
+      setTimeout(()=>{
+        document.querySelectorAll('.sort-card').forEach(c=>c.classList.remove('wrong','correct'));
+        selectedSortIdx=null;
+      },1000);
+      showToast(`答对了 ${correct} 张！还有 ${6-correct} 张位置不对，继续调整！`,2500);
+    }
+  }
+}
+
+// ════════════════════════════════
+// WIN OVERLAY
+// ════════════════════════════════
+function showWin(score, stars, emoji, gameName, msg, nextGame){
+  state.scores[nextGame?nextGame-2:3]=score;
+  state.stars[nextGame?nextGame-2:3]=stars;
+  state.completed[nextGame?nextGame-2:3]=true;
+  document.getElementById('win-emoji').textContent=emoji;
+  document.getElementById('win-title').textContent=`${gameName} 完成！`;
+  document.getElementById('win-stars').textContent='⭐'.repeat(stars)+'☆'.repeat(3-stars);
+  document.getElementById('win-msg').innerHTML=msg.replace(/\n/g,'<br>');
+  const nextBtn=document.getElementById('win-next-btn');
+  if(nextGame && nextGame<=4){
+    nextBtn.textContent=`关卡${nextGame} →`;
+    nextBtn.onclick=()=>{hideWin();startGame(nextGame);};
+  } else {
+    nextBtn.textContent='🏆 查看成绩';
+    nextBtn.onclick=()=>{hideWin();showResult();};
+  }
+  document.getElementById('win-overlay').classList.add('show');
+  launchConfetti();
+}
+
+function hideWin(){document.getElementById('win-overlay').classList.remove('show');}
+
+// Score mapping for game 1 (which saves to index 0)
+// Fix: game number → scores array index
+// Game 1 → index 0, Game 2 → index 1, etc.
+// Patch showWin calls:
+(()=>{
+  // Re-patch to use game index correctly
+  const orig = showWin;
+  window.showWin = function(score,stars,emoji,gameName,msg,nextGame){
+    // Determine current game from screen
+    const cur = state.currentScreen;
+    const idx = cur==='game1'?0:cur==='game2'?1:cur==='game3'?2:3;
+    state.scores[idx]=score;
+    state.stars[idx]=stars;
+    state.completed[idx]=true;
+    document.getElementById('win-emoji').textContent=emoji;
+    document.getElementById('win-title').textContent=`${gameName} 完成！`;
+    document.getElementById('win-stars').textContent='⭐'.repeat(stars)+'☆'.repeat(3-stars);
+    document.getElementById('win-msg').innerHTML=msg.replace(/\n/g,'<br>');
+    const nextBtn=document.getElementById('win-next-btn');
+    if(nextGame && nextGame<=4){
+      nextBtn.textContent=`关卡${nextGame} →`;
+      nextBtn.onclick=()=>{hideWin();startGame(nextGame);};
+    } else {
+      const allDone=state.completed.every(Boolean);
+      nextBtn.textContent=allDone?'🏆 查看成绩':'🗺️ 返回地图';
+      nextBtn.onclick=()=>{hideWin();allDone?showResult():showMap();};
+    }
+    document.getElementById('win-overlay').classList.add('show');
+    launchConfetti();
+  };
+})();
+
+// ════════════════════════════════
+// RESULT SCREEN
+// ════════════════════════════════
+function showResult(){
+  const total=state.scores.reduce((a,b)=>a+b,0);
+  const totalStars=state.stars.reduce((a,b)=>a+b,0);
+  document.getElementById('result-score').textContent=total;
+  const sDisplay=document.getElementById('result-stars');
+  sDisplay.textContent='⭐'.repeat(totalStars)+'☆'.repeat(12-totalStars);
+  const badges=['🏃两人三脚','📚词语配对','🌅景色填词','🔢故事排序'];
+  const bc=document.getElementById('result-badges');
+  bc.innerHTML='';
+  badges.forEach((b,i)=>{
+    if(state.completed[i]){
+      const d=document.createElement('div');
+      d.className='badge';
+      d.innerHTML=`<div class="badge-icon">${b[0]}</div><div class="badge-name">${b.slice(1)}</div><div style="font-size:16px">${'⭐'.repeat(state.stars[i])}</div>`;
+      bc.appendChild(d);
+    }
+  });
+  const msgs={
+    high:'你完全掌握了《露营记》的内容！词语运用准确，故事理解透彻，真了不起！🎓',
+    mid:'做得很好！对课文有一定的理解，继续复习词语和故事内容吧！📖',
+    low:'不要灰心！重新阅读课文，再来挑战一次，你一定能做得更好！💪'
+  };
+  const msg=total>=320?msgs.high:total>=200?msgs.mid:msgs.low;
+  document.getElementById('result-msg').textContent=msg;
+  showScreen('result-screen');
+  launchConfetti();
+}
+
+function restartAll(){
+  state.scores=[0,0,0,0]; state.completed=[false,false,false,false]; state.stars=[0,0,0,0];
+  document.querySelectorAll('.zone-card').forEach((z,i)=>{
+    z.classList.remove('done');
+    document.getElementById(`zs${i+1}`).textContent='';
+    if(i>0) z.classList.add('locked');
+  });
+  showMap();
+}
+
+// ════════════════════════════════
+// TOAST
+// ════════════════════════════════
+let toastTimeout;
+function showToast(msg,dur=2200){
+  const t=document.getElementById('toast');
+  t.innerHTML=msg.replace(/\n/g,'<br>');
+  t.classList.add('show');
+  clearTimeout(toastTimeout);
+  toastTimeout=setTimeout(()=>t.classList.remove('show'),dur);
+}
+
+// ════════════════════════════════
+// CONFETTI
+// ════════════════════════════════
+let confettiActive=false;
+function launchConfetti(){
+  const canvas=document.getElementById('confetti-canvas');
+  canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+  const ctx=canvas.getContext('2d');
+  const pieces=[];
+  const colors=['#FF6B35','#FFD166','#2EC4B6','#4CAF50','#9C27B0','#2196F3'];
+  for(let i=0;i<120;i++){
+    pieces.push({x:Math.random()*canvas.width,y:-10-Math.random()*200,w:8+Math.random()*8,h:6+Math.random()*6,color:colors[Math.floor(Math.random()*colors.length)],speed:3+Math.random()*4,spin:Math.random()*6-3,angle:Math.random()*Math.PI*2,vx:Math.random()*4-2});
+  }
+  confettiActive=true;
+  let frame=0;
+  function draw(){
+    if(!confettiActive||frame>180){ctx.clearRect(0,0,canvas.width,canvas.height);confettiActive=false;return;}
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    pieces.forEach(p=>{
+      p.y+=p.speed; p.x+=p.vx; p.angle+=p.spin*.04;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.angle);
+      ctx.fillStyle=p.color; ctx.globalAlpha=Math.max(0,1-frame/180);
+      ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);
+      ctx.restore();
+    });
+    frame++;
+    requestAnimationFrame(draw);
+  }
+  draw();
+}
+
+// ════════════════════════════════
+// KEYBOARD support for game 1
+// ════════════════════════════════
+document.addEventListener('keydown',e=>{
+  if(state.currentScreen!=='game1') return;
+  if(e.key==='ArrowLeft') pressfoot('L');
+  if(e.key==='ArrowRight') pressfoot('R');
+});
+
+// ════════════════════════════════
+// INIT
+// ════════════════════════════════
+updateMapUI();
+</script>
+</body>
+</html>
