@@ -1,0 +1,1128 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>阿东的心情变化 · 《一千桶水》</title>
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&family=Noto+Serif+SC:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ── RESET & BASE ── */
+*{box-sizing:border-box;margin:0;padding:0;}
+html{height:100%;}
+body{
+  background:#081422;color:#eef8ff;
+  font-family:'Noto Serif SC',serif;
+  min-height:100vh;overflow-x:hidden;
+}
+
+/* ── ANIMATED OCEAN BG ── */
+.ocean-bg{
+  position:fixed;inset:0;z-index:0;overflow:hidden;
+  background:linear-gradient(170deg,#081422 0%,#0b2040 40%,#133660 75%,#1a4a7a 100%);
+}
+.star{position:absolute;border-radius:50%;background:#fff;animation:twinkle ease-in-out infinite;}
+@keyframes twinkle{0%,100%{opacity:.12;}50%{opacity:.85;}}
+.bubble{
+  position:absolute;border-radius:50%;
+  background:radial-gradient(circle at 30% 30%,rgba(168,216,240,.2),rgba(45,125,200,.04));
+  border:1px solid rgba(168,216,240,.13);animation:rise linear infinite;
+}
+@keyframes rise{
+  0%{transform:translateY(105vh) scale(.3);opacity:0;}
+  10%{opacity:.6;}90%{opacity:.15;}
+  100%{transform:translateY(-15vh) scale(1);opacity:0;}
+}
+.wave{
+  position:absolute;width:220%;height:60px;border-radius:50%;
+  background:rgba(30,95,160,.1);animation:wv 10s ease-in-out infinite;
+}
+@keyframes wv{0%,100%{transform:translateX(0);}50%{transform:translateX(4%) translateY(-8px);}}
+
+/* ── LAYOUT ── */
+.page{position:relative;z-index:1;max-width:900px;margin:0 auto;padding:20px 20px 60px;}
+
+/* ── HEADER ── */
+.hd{text-align:center;padding:26px 0 20px;animation:fadeDown .7s ease;}
+@keyframes fadeDown{from{opacity:0;transform:translateY(-18px);}to{opacity:1;transform:translateY(0);}}
+.hd-whale{font-size:2.4rem;margin-bottom:6px;}
+.hd h1{
+  font-family:'Ma Shan Zheng',cursive;
+  font-size:clamp(1.6rem,5vw,2.6rem);
+  color:#f0c040;
+  text-shadow:0 0 24px rgba(240,192,64,.5),0 2px 4px rgba(0,0,0,.6);
+  letter-spacing:.12em;margin-bottom:4px;
+}
+.hd .sub{font-size:.78rem;color:#a8d8f0;opacity:.75;letter-spacing:.2em;}
+
+/* ── SCORE BAR ── */
+.score-bar{
+  display:flex;align-items:center;gap:12px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(168,216,240,.13);
+  border-radius:14px;padding:10px 16px;margin-bottom:16px;
+}
+.score-xp{
+  display:flex;flex-direction:column;flex:1;
+}
+.xp-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;}
+.xp-title{font-size:.72rem;color:#a8d8f0;opacity:.7;}
+.xp-val{font-size:.78rem;color:#f0c040;font-weight:700;}
+.xp-track{height:8px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden;}
+.xp-fill{
+  height:100%;background:linear-gradient(90deg,#7ee8a2,#2de87a);
+  border-radius:4px;transition:width .5s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 0 8px rgba(126,232,162,.45);
+}
+.combo-wrap{
+  text-align:center;min-width:52px;
+  background:rgba(255,255,255,.05);border:1px solid rgba(168,216,240,.13);
+  border-radius:10px;padding:5px 9px;flex-shrink:0;
+}
+.combo-n{font-size:1.3rem;color:#f0c040;font-weight:900;line-height:1;transition:all .2s;}
+.combo-t{font-size:.6rem;color:#a8d8f0;opacity:.65;}
+.combo-wrap.fire .combo-n{color:#ff9040;text-shadow:0 0 10px rgba(255,144,64,.7);animation:cpop .3s ease;}
+@keyframes cpop{0%{transform:scale(1);}50%{transform:scale(1.4);}100%{transform:scale(1);}}
+
+/* ── INSTRUCTION CARD ── */
+.instr{
+  background:rgba(255,255,255,.04);border:1px solid rgba(168,216,240,.12);
+  border-radius:14px;padding:13px 18px;margin-bottom:18px;
+  font-size:.84rem;color:#a8d8f0;line-height:1.85;
+}
+.instr strong{color:#f0c040;}
+
+/* ── MAIN CHART PANEL ── */
+.chart-panel{
+  background:rgba(11,32,64,.8);border:1px solid rgba(168,216,240,.13);
+  border-radius:20px;padding:20px 18px 16px;
+  backdrop-filter:blur(12px);margin-bottom:16px;
+}
+.chart-title{
+  font-family:'ZCOOL XiaoWei',serif;font-size:1.1rem;color:#f0c040;
+  margin-bottom:18px;display:flex;align-items:center;gap:8px;
+  padding-bottom:10px;border-bottom:1px solid rgba(168,216,240,.1);
+}
+
+/* ── INTERACTIVE CHART ── */
+.chart-wrap{overflow-x:auto;margin-bottom:4px;}
+.chart-inner{min-width:480px;position:relative;}
+
+/* Y-axis */
+.y-axis{
+  position:absolute;left:0;top:0;
+  display:flex;flex-direction:column;justify-content:space-between;
+  width:80px;pointer-events:none;
+}
+.y-lbl{
+  font-size:.68rem;color:rgba(168,216,240,.55);
+  text-align:right;padding-right:10px;line-height:1.2;
+}
+
+/* Grid */
+.chart-grid{
+  margin-left:84px;position:relative;
+  border-left:2px solid rgba(168,216,240,.22);
+  border-bottom:2px solid rgba(168,216,240,.22);
+  background:rgba(255,255,255,.015);
+  border-radius:0 4px 0 0;
+}
+.hline{
+  position:absolute;left:0;right:0;height:1px;
+  background:rgba(168,216,240,.08);pointer-events:none;
+}
+.hline.mid{background:rgba(168,216,240,.15);}
+.vguide{
+  position:absolute;top:0;bottom:0;width:1px;pointer-events:none;
+  background:repeating-linear-gradient(to bottom,rgba(168,216,240,.12) 0,rgba(168,216,240,.12) 4px,transparent 4px,transparent 8px);
+}
+
+/* Dot slots */
+.dot-slot{
+  position:absolute;
+  width:44px;height:44px;border-radius:50%;
+  border:2px dashed rgba(168,216,240,.3);
+  background:rgba(255,255,255,.05);
+  cursor:pointer;transition:all .25s;
+  display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;color:rgba(168,216,240,.45);
+  font-weight:600;
+  transform:translate(-50%,-50%);
+  z-index:10;
+}
+.dot-slot:hover{
+  border-color:#f0c040;background:rgba(240,192,64,.1);
+  color:#f0c040;transform:translate(-50%,-50%) scale(1.1);
+  box-shadow:0 0 14px rgba(240,192,64,.3);
+}
+.dot-slot.placed{
+  border:2px solid #2d7dc8;background:rgba(45,125,200,.28);
+  color:#eef8ff;font-size:.72rem;font-weight:700;
+  white-space:nowrap;padding:0 6px;
+  border-radius:22px;width:auto;min-width:44px;height:32px;
+  box-shadow:0 2px 10px rgba(45,125,200,.3);
+}
+.dot-slot.placed:hover{
+  border-color:#e85d4a;background:rgba(232,93,74,.2);
+  box-shadow:0 2px 12px rgba(232,93,74,.3);
+}
+.dot-slot.correct{
+  border:2px solid #3dba7a!important;background:rgba(61,186,122,.28)!important;
+  color:#9ce8c0!important;cursor:default;pointer-events:none;
+  box-shadow:0 0 12px rgba(61,186,122,.35)!important;
+  border-radius:22px;width:auto;min-width:44px;height:32px;
+  padding:0 6px;font-size:.72rem;font-weight:700;white-space:nowrap;
+  transform:translate(-50%,-50%) scale(1)!important;
+}
+.dot-slot.wrong{
+  border-color:#e85d4a!important;background:rgba(232,93,74,.2)!important;
+  animation:shake .45s ease;
+}
+@keyframes shake{
+  0%,100%{transform:translate(-50%,-50%);}
+  25%{transform:translate(calc(-50% + 6px),-50%);}
+  75%{transform:translate(calc(-50% - 6px),-50%);}
+}
+
+/* Curve SVG */
+#curveSvg{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  pointer-events:none;overflow:visible;
+}
+
+/* X-axis */
+.x-axis{
+  margin-left:84px;display:flex;
+  padding-top:10px;
+}
+.x-lbl{
+  flex:1;text-align:center;font-size:.7rem;
+  color:rgba(168,216,240,.65);line-height:1.5;
+  padding:0 2px;cursor:pointer;transition:color .2s;
+  user-select:none;
+}
+.x-lbl:hover{color:#f0c040;}
+.x-lbl .ev-n{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:20px;height:20px;border-radius:50%;
+  background:#1e5fa0;font-size:.64rem;font-weight:700;
+  margin-bottom:3px;
+}
+.x-lbl.active-lbl .ev-n{background:#f0c040;color:#081422;}
+
+/* ── EVENT DETAIL BOX ── */
+.ev-detail{
+  background:rgba(255,255,255,.04);border:1px solid rgba(168,216,240,.15);
+  border-left:3px solid #f0c040;
+  border-radius:0 12px 12px 0;padding:12px 16px;
+  margin-bottom:14px;font-size:.84rem;color:#a8d8f0;
+  line-height:1.85;display:none;animation:fadeIn .2s ease;
+}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
+.ev-detail.show{display:block;}
+.ev-detail .ev-num-tag{
+  display:inline-block;background:#1e5fa0;color:#fff;
+  font-size:.68rem;font-weight:700;padding:1px 8px;border-radius:8px;margin-right:6px;
+}
+.ev-detail .quote{
+  font-style:italic;font-size:.78rem;
+  color:rgba(168,216,240,.7);border-left:2px solid rgba(168,216,240,.2);
+  padding-left:8px;margin-top:5px;
+}
+
+/* ── MOOD PICKER ── */
+.picker{
+  position:fixed;z-index:600;
+  background:linear-gradient(135deg,rgba(11,32,64,.98),rgba(8,20,34,.98));
+  border:1px solid rgba(168,216,240,.25);border-radius:16px;
+  padding:12px;min-width:160px;
+  box-shadow:0 10px 36px rgba(0,0,0,.55),0 0 20px rgba(45,125,200,.15);
+  display:none;
+}
+.picker.show{display:block;animation:pickerPop .2s cubic-bezier(.34,1.56,.64,1);}
+@keyframes pickerPop{from{transform:scale(.85);opacity:0;}to{transform:scale(1);opacity:1;}}
+.picker-ttl{
+  font-size:.72rem;color:rgba(168,216,240,.6);
+  text-align:center;margin-bottom:8px;letter-spacing:.05em;
+}
+.picker-opts{display:flex;flex-direction:column;gap:5px;}
+.pick-btn{
+  background:rgba(255,255,255,.06);border:1px solid rgba(168,216,240,.18);
+  border-radius:9px;padding:8px 14px;
+  color:#a8d8f0;cursor:pointer;text-align:left;
+  font-family:'Noto Serif SC',serif;font-size:.84rem;
+  transition:all .18s;white-space:nowrap;
+}
+.pick-btn:hover{border-color:#f0c040;color:#f0c040;background:rgba(240,192,64,.1);}
+
+/* ── CONTROLS ── */
+.controls{
+  display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+  margin-bottom:14px;
+}
+.btn-check{
+  background:linear-gradient(135deg,#f0c040,#b87c08);
+  border:1px solid rgba(240,192,64,.35);border-radius:12px;
+  padding:11px 24px;color:#1a0a00;cursor:pointer;
+  font-family:'Noto Serif SC',serif;font-size:.9rem;font-weight:700;
+  transition:all .2s;
+}
+.btn-check:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(240,192,64,.4);}
+.btn-check:disabled{opacity:.4;cursor:default;transform:none;box-shadow:none;}
+.btn-reset{
+  background:rgba(255,255,255,.06);border:1px solid rgba(168,216,240,.18);
+  border-radius:12px;padding:11px 20px;color:#a8d8f0;cursor:pointer;
+  font-family:'Noto Serif SC',serif;font-size:.86rem;transition:all .2s;
+  display:flex;align-items:center;gap:6px;
+}
+.btn-reset:hover{border-color:#a8d8f0;background:rgba(168,216,240,.1);}
+
+/* ── FEEDBACK ── */
+.feedback{
+  padding:11px 15px;border-radius:11px;font-size:.84rem;line-height:1.75;
+  display:none;margin-bottom:14px;
+}
+.feedback.show{display:block;animation:fadeIn .25s;}
+.feedback.ok{background:rgba(61,186,122,.16);border:1px solid rgba(61,186,122,.38);color:#9ce8c0;}
+.feedback.no{background:rgba(232,93,74,.13);border:1px solid rgba(232,93,74,.28);color:#f0a090;}
+
+/* ── TRY AGAIN BANNER ── */
+.try-again{
+  background:rgba(232,93,74,.12);border:1px solid rgba(232,93,74,.3);
+  border-radius:11px;padding:11px 15px;margin-bottom:14px;
+  font-size:.84rem;color:#f0a090;line-height:1.7;display:none;
+}
+.try-again.show{display:block;animation:fadeIn .3s;}
+
+/* ── SUCCESS SECTION ── */
+.success-sec{
+  text-align:center;padding:20px 0 8px;display:none;
+}
+.success-sec.show{display:block;animation:fadeIn .5s;}
+.success-whale{font-size:2.8rem;animation:wbob 2s ease-in-out infinite;display:inline-block;}
+@keyframes wbob{0%,100%{transform:translateY(0) rotate(-5deg);}50%{transform:translateY(-12px) rotate(5deg);}}
+.success-title{font-family:'Ma Shan Zheng';font-size:1.7rem;color:#f0c040;margin:10px 0 6px;}
+.success-body{font-size:.88rem;color:#a8d8f0;margin-bottom:18px;line-height:1.8;}
+.big-stars{font-size:1.7rem;letter-spacing:4px;margin:6px 0;}
+
+/* ── FINAL CURVE PANEL ── */
+.curve-panel{
+  background:rgba(11,32,64,.8);border:1px solid rgba(168,216,240,.13);
+  border-radius:20px;padding:20px 18px;backdrop-filter:blur(12px);
+  margin-bottom:16px;display:none;
+}
+.curve-panel.show{display:block;animation:fadeIn .4s;}
+.curve-panel-title{
+  font-family:'ZCOOL XiaoWei',serif;font-size:1.05rem;color:#f0c040;
+  margin-bottom:16px;display:flex;align-items:center;gap:8px;
+  padding-bottom:10px;border-bottom:1px solid rgba(168,216,240,.1);
+}
+
+/* ── FLOATING SCORES ── */
+.xp-float{
+  position:fixed;pointer-events:none;z-index:999;
+  font-weight:900;font-size:1.3rem;color:#7ee8a2;
+  text-shadow:0 0 12px rgba(126,232,162,.8);
+  animation:xpfl 1.2s ease-out forwards;
+}
+@keyframes xpfl{0%{opacity:1;transform:translateY(0) scale(1);}100%{opacity:0;transform:translateY(-80px) scale(1.4);}}
+.cfloat{color:#f0c040;font-size:1.5rem;text-shadow:0 0 14px rgba(255,215,0,.8);}
+.mfloat{color:#e85d4a;}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;top:16px;right:16px;z-index:998;
+  background:linear-gradient(135deg,rgba(11,32,64,.97),rgba(8,20,34,.97));
+  border:1px solid #f0c040;border-radius:14px;padding:12px 16px;
+  min-width:200px;max-width:280px;
+  transform:translateX(140%);transition:transform .4s cubic-bezier(.34,1.56,.64,1);
+  box-shadow:0 8px 28px rgba(0,0,0,.4);
+}
+.toast.show{transform:translateX(0);}
+.t-icon{font-size:1.5rem;margin-bottom:3px;}
+.t-title{font-size:.72rem;color:#f0c040;font-weight:700;letter-spacing:.08em;margin-bottom:2px;}
+.t-body{font-size:.78rem;color:#a8d8f0;line-height:1.5;}
+
+/* ── FIREWORKS ── */
+.fw{position:fixed;pointer-events:none;z-index:999;font-size:1.3rem;
+  animation:fwa 1s ease-out forwards;}
+@keyframes fwa{0%{opacity:1;transform:translate(0,0);}100%{opacity:0;transform:var(--ft);}}
+
+/* ── RESPONSIVE ── */
+@media(max-width:500px){
+  .page{padding:14px 14px 50px;}
+  .chart-panel{padding:14px 12px 12px;}
+  .y-lbl{font-size:.6rem;}
+  .x-lbl{font-size:.62rem;}
+}
+</style>
+</head>
+<body>
+
+<!-- Ocean background -->
+<div class="ocean-bg" id="bgEl">
+  <div class="wave" style="bottom:6%;"></div>
+  <div class="wave" style="bottom:2%;opacity:.4;animation-duration:14s;animation-delay:-5s;"></div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <div class="t-icon" id="tIcon">🏅</div>
+  <div class="t-title" id="tTitle"></div>
+  <div class="t-body" id="tBody"></div>
+</div>
+
+<!-- Mood picker popup -->
+<div class="picker" id="picker">
+  <div class="picker-ttl">选择阿东的心情：</div>
+  <div class="picker-opts" id="pickerOpts"></div>
+</div>
+
+<div class="page">
+
+  <!-- Header -->
+  <div class="hd">
+    <div class="hd-whale">🐋</div>
+    <h1>阿东的心情变化</h1>
+    <div class="sub">《一千桶水》· 五年级华文</div>
+  </div>
+
+  <!-- Score bar -->
+  <div class="score-bar">
+    <div class="score-xp">
+      <div class="xp-row">
+        <span class="xp-title">🌊 经验值</span>
+        <span class="xp-val"><span id="xpNum">0</span> / <span id="xpMax">68</span> XP</span>
+      </div>
+      <div class="xp-track"><div class="xp-fill" id="xpFill" style="width:0%"></div></div>
+    </div>
+    <div class="combo-wrap" id="comboWrap">
+      <div class="combo-n" id="comboN">0</div>
+      <div class="combo-t">连击</div>
+    </div>
+  </div>
+
+  <!-- Instruction -->
+  <div class="instr">
+    📌 下面是故事里的<strong>6个情节</strong>（X轴时间线）。点击图表中每个情节上方的<strong>虚线圆点</strong>，选择阿东当时的心情（Y轴）。<br>
+    全部填好后按<strong>「检查答案」</strong>——全部正确才会显示完整的<strong>心情变化曲线</strong>！
+  </div>
+
+  <!-- Interactive chart -->
+  <div class="chart-panel">
+    <div class="chart-title">
+      <span>📊</span>
+      <span>心情变化互动图表</span>
+      <span style="font-size:.72rem;color:rgba(168,216,240,.55);margin-left:auto;">点击情节编号查看详情</span>
+    </div>
+
+    <div class="chart-wrap">
+      <div class="chart-inner" id="chartInner">
+        <div class="y-axis" id="yAxis"></div>
+        <div class="chart-grid" id="chartGrid">
+          <svg id="curveSvg"></svg>
+        </div>
+        <div class="x-axis" id="xAxis"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Event detail card -->
+  <div class="ev-detail" id="evDetail"></div>
+
+  <!-- Feedback -->
+  <div class="try-again" id="tryAgain">
+    ❌ 有 <span id="wrongCount"></span> 个情节选错了！已重置，请重新选择。
+  </div>
+  <div class="feedback" id="feedback"></div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <button class="btn-check" id="btnCheck" onclick="checkAnswers()" disabled>检查答案 →</button>
+    <button class="btn-reset" onclick="resetAll()">↺ 重置全部</button>
+  </div>
+
+  <!-- Final curve panel (revealed after passing) -->
+  <div class="curve-panel" id="curvePanel">
+    <div class="curve-panel-title">
+      <span>📈</span>阿东的心情变化曲线（完整版）
+    </div>
+    <div class="chart-wrap">
+      <div class="chart-inner" id="curveChartInner">
+        <div class="y-axis" id="curveYAxis"></div>
+        <div class="chart-grid" id="curveGrid">
+          <svg id="curveFinalSvg"></svg>
+        </div>
+        <div class="x-axis" id="curveXAxis"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success section -->
+  <div class="success-sec" id="successSec">
+    <div class="success-whale">🐋</div>
+    <div class="success-title">全部正确！</div>
+    <div class="big-stars" id="successStars">⭐⭐⭐</div>
+    <div class="success-body" id="successBody"></div>
+  </div>
+
+</div><!-- .page -->
+
+<script>
+// ══════════════════════════════════════════
+// DATA
+// ══════════════════════════════════════════
+const EVENTS = [
+  {
+    id:'e1',
+    short:'发现搁浅',
+    txt:'阿东和弟弟在海边发现鲸鱼搁浅，鲸鱼随时会死。',
+    quote:'"鲸鱼搁浅了，怎么办？如果没有水，它就会死掉"',
+    correct:'着急担心',
+    opts:['高兴期待','着急担心','轻松平静','伤心绝望']
+  },
+  {
+    id:'e2',
+    short:'努力提水',
+    txt:'阿东和弟弟与村民们一起来来回回提水，跑得满头大汗。',
+    quote:'"他们喘着气，来来回回地跑着，跑得满头大汗，衣服都湿透了"',
+    correct:'紧张努力',
+    opts:['无聊轻松','放松开心','紧张努力','失望沮丧']
+  },
+  {
+    id:'e3',
+    short:'涨潮欢呼',
+    txt:'忽然有人喊"涨潮了！"海浪一波一波冲来，鲸鱼有救了！',
+    quote:'"大家都激动地欢呼起来：涨潮了！鲸鱼有救了！"',
+    correct:'激动高兴',
+    opts:['激动高兴','平静无聊','害怕恐惧','失望沮丧']
+  },
+  {
+    id:'e4',
+    short:'静止不动',
+    txt:'海水漫过鲸鱼身体，但鲸鱼一动也不动，大家的心一沉。',
+    quote:'"望着海水中一动也不动的鲸鱼，大家的心不禁一沉"',
+    correct:'担心失望',
+    opts:['非常高兴','担心失望','愤怒生气','轻松平静']
+  },
+  {
+    id:'e5',
+    short:'鲸鱼动了',
+    txt:'人群中响起惊呼"动了！动了！"鲸鱼开始摆动身子！',
+    quote:'"人群中响起一阵惊呼：动了！动了！"',
+    correct:'惊喜兴奋',
+    opts:['难过伤心','轻松平静','惊喜兴奋','担心害怕']
+  },
+  {
+    id:'e6',
+    short:'回归大海',
+    txt:'大浪打来，鲸鱼随波浪离开沙滩，慢慢游回大海，大家依依不舍。',
+    quote:'"悬着的心才放了下来"；"依依不舍地跟鲸鱼道别"',
+    correct:'放心不舍',
+    opts:['后悔难受','放心不舍','愤怒失望','无动于衷']
+  }
+];
+
+const EMOJIS = {
+  '着急担心':'😟','紧张努力':'😤','激动高兴':'😄',
+  '担心失望':'😢','惊喜兴奋':'😲','放心不舍':'😊',
+  '高兴期待':'😊','轻松平静':'😐','伤心绝望':'😭',
+  '无聊轻松':'😒','放松开心':'😌','失望沮丧':'😞',
+  '平静无聊':'😶','害怕恐惧':'😨','非常高兴':'😁',
+  '愤怒生气':'😠','难过伤心':'😢','担心害怕':'😰',
+  '后悔难受':'😣','无动于衷':'😑'
+};
+
+// Y-axis: 5 mood levels, top=happy (index 0), bottom=sad (index 4)
+const Y_LEVELS = [
+  {label:'😄 非常开心', val:4},
+  {label:'😊 开心',     val:3},
+  {label:'😐 平静',     val:2},
+  {label:'😟 担心',     val:1},
+  {label:'😢 非常难过', val:0},
+];
+// Mood → Y level value (0–4)
+const MOOD_VAL = {
+  '着急担心':1,'紧张努力':1,'激动高兴':4,
+  '担心失望':0,'惊喜兴奋':4,'放心不舍':3,
+  '高兴期待':3,'轻松平静':2,'伤心绝望':0,
+  '无聊轻松':2,'放松开心':3,'失望沮丧':1,
+  '平静无聊':2,'害怕恐惧':1,'非常高兴':4,
+  '愤怒生气':1,'难过伤心':0,'担心害怕':1,
+  '后悔难受':0,'无动于衷':2
+};
+
+// ── Chart dimensions ──
+const ROW_H  = 56; // px per mood level row
+const N_ROWS = 5;
+const CHART_H = N_ROWS * ROW_H;
+
+// ── State ──
+const S = {
+  placed: {},   // evid → mood string | null
+  correct: {},  // evid → true (locked correct)
+  xp: 0,
+  combo: 0,
+  maxCombo: 0,
+  done: false,
+  activeEvid: null
+};
+EVENTS.forEach(ev=>{ S.placed[ev.id]=null; S.correct[ev.id]=false; });
+
+// ── Audio ──
+let AC;
+function getAC(){ if(!AC) AC=new (window.AudioContext||window.webkitAudioContext)(); return AC; }
+function tone(f,d,t='sine',v=.22){
+  try{const ac=getAC(),o=ac.createOscillator(),g=ac.createGain();
+    o.connect(g);g.connect(ac.destination);o.type=t;o.frequency.value=f;
+    g.gain.setValueAtTime(v,ac.currentTime);g.gain.exponentialRampToValueAtTime(.001,ac.currentTime+d);
+    o.start();o.stop(ac.currentTime+d);}catch(e){}
+}
+function sfxOk(){ tone(523,.07);setTimeout(()=>tone(659,.07),75);setTimeout(()=>tone(784,.18),150); }
+function sfxNo(){ tone(200,.22,'sawtooth',.13); }
+function sfxCombo(n){ const f=[440,523,587,659,784,880][Math.min(n-2,5)]; tone(f,.1);setTimeout(()=>tone(f*1.5,.14),110); }
+function sfxLvl(){ [523,659,784,1046].forEach((f,i)=>setTimeout(()=>tone(f,.22),i*110)); }
+function sfxPlace(){ tone(300,.08);setTimeout(()=>tone(380,.1),80); }
+
+// ══════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════
+(function init(){
+  // Background particles
+  const bg = document.getElementById('bgEl');
+  for(let i=0;i<50;i++){
+    const s=document.createElement('div'); s.className='star';
+    const sz=Math.random()*2+1;
+    s.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;top:${Math.random()*70}%;animation-duration:${Math.random()*3+2}s;animation-delay:${Math.random()*5}s;`;
+    bg.appendChild(s);
+  }
+  for(let i=0;i<12;i++){
+    const b=document.createElement('div'); b.className='bubble';
+    const sz=Math.random()*24+6;
+    b.style.cssText=`width:${sz}px;height:${sz}px;left:${Math.random()*100}%;animation-duration:${Math.random()*14+7}s;animation-delay:${Math.random()*12}s;`;
+    bg.appendChild(b);
+  }
+  buildChart('chartGrid','yAxis','xAxis');
+  document.addEventListener('click', outsideClose, true);
+})();
+
+// ══════════════════════════════════════════
+// BUILD CHART
+// ══════════════════════════════════════════
+function buildChart(gridId, yId, xId, locked=false){
+  const grid = document.getElementById(gridId);
+  const yAxis = document.getElementById(yId);
+  const xAxis = document.getElementById(xId);
+  if(!grid) return;
+
+  const svgId = gridId==='chartGrid' ? 'curveSvg' : 'curveFinalSvg';
+  grid.style.height = CHART_H + 'px';
+  grid.innerHTML = `<svg id="${svgId}" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:visible;"></svg>`;
+
+  yAxis.innerHTML=''; xAxis.innerHTML='';
+  yAxis.style.height = CHART_H + 'px';
+
+  // Y labels
+  Y_LEVELS.forEach(lv=>{
+    const d=document.createElement('div');
+    d.className='y-lbl';d.textContent=lv.label;
+    yAxis.appendChild(d);
+  });
+
+  // H-lines
+  Y_LEVELS.forEach((lv,i)=>{
+    const l=document.createElement('div');
+    l.className='hline'+(i===2?' mid':'');
+    l.style.top=(i*ROW_H+ROW_H/2)+'px';
+    grid.appendChild(l);
+  });
+
+  // Columns: vguide + dot slot + x-label
+  const colPct = 100/EVENTS.length;
+  EVENTS.forEach((ev,i)=>{
+    // Vertical guide
+    const vg=document.createElement('div');
+    vg.className='vguide';vg.style.left=((i+.5)*colPct)+'%';
+    grid.appendChild(vg);
+
+    if(!locked){
+      // Interactive dot slot
+      const slot=document.createElement('div');
+      slot.className='dot-slot';slot.id='slot-'+ev.id;
+      slot.style.left=((i+.5)*colPct)+'%';
+
+      const placed = S.placed[ev.id];
+      const isCorrect = S.correct[ev.id];
+
+      if(isCorrect){
+        slot.classList.add('correct');
+        slot.textContent = (EMOJIS[ev.correct]||'') + ' ' + ev.correct;
+        slot.style.top = yPos(ev.correct)+'px';
+      } else if(placed){
+        slot.classList.add('placed');
+        slot.textContent = (EMOJIS[placed]||'') + ' ' + placed;
+        slot.style.top = yPos(placed)+'px';
+      } else {
+        slot.textContent='+';
+        slot.style.top=(CHART_H/2)+'px';
+      }
+
+      if(!isCorrect){
+        slot.addEventListener('click', e=>{e.stopPropagation(); openPicker(ev.id, slot, i);});
+      }
+      grid.appendChild(slot);
+    }
+
+    // X label
+    const xl=document.createElement('div');
+    xl.className='x-lbl';xl.id=(locked?'cx-':'xx-')+ev.id;
+    xl.innerHTML=`<div class="ev-n">${i+1}</div><br>${ev.short}`;
+    xl.addEventListener('click',()=>showDetail(ev,i,xl));
+    xAxis.appendChild(xl);
+  });
+
+  // Redraw preview curve if slots have placed values
+  if(!locked) redrawPreview();
+}
+
+function yPos(mood){
+  const val = MOOD_VAL[mood] ?? 2;
+  const row = Y_LEVELS.findIndex(l=>l.val===val);
+  return (row<0?2:row)*ROW_H + ROW_H/2;
+}
+
+// ══════════════════════════════════════════
+// DETAIL BOX
+// ══════════════════════════════════════════
+function showDetail(ev, idx, xlEl){
+  // Toggle: clicking same label hides detail
+  const box = document.getElementById('evDetail');
+  const prevId = box.dataset.evid;
+  // Clear active label
+  document.querySelectorAll('.x-lbl').forEach(el=>el.classList.remove('active-lbl'));
+
+  if(prevId===ev.id && box.classList.contains('show')){
+    box.classList.remove('show');
+    box.dataset.evid='';
+    return;
+  }
+  box.dataset.evid = ev.id;
+  box.classList.add('show');
+  xlEl.classList.add('active-lbl');
+  box.innerHTML=`<span class="ev-num-tag">情节 ${idx+1}</span><strong style="color:#eef8ff">${ev.txt}</strong><div class="quote">📖 ${ev.quote}</div>`;
+}
+
+// ══════════════════════════════════════════
+// PICKER
+// ══════════════════════════════════════════
+function openPicker(evid, slotEl, colIdx){
+  if(S.correct[evid]) return;
+  S.activeEvid = evid;
+
+  const picker = document.getElementById('picker');
+  const opts = document.getElementById('pickerOpts');
+  const ev = EVENTS.find(e=>e.id===evid);
+
+  opts.innerHTML='';
+  ev.opts.forEach(mood=>{
+    const btn=document.createElement('button');
+    btn.className='pick-btn';
+    btn.textContent=(EMOJIS[mood]||'') + ' ' + mood;
+    btn.addEventListener('click', e=>{e.stopPropagation(); selectMood(evid, mood);});
+    opts.appendChild(btn);
+  });
+
+  // Position: fixed coords, prefer right → left → below
+  picker.style.display='block';
+  picker.classList.add('show');
+
+  const rect = slotEl.getBoundingClientRect();
+  const ph = picker.offsetHeight || 280;
+  const pw = picker.offsetWidth  || 170;
+  const mg = 10;
+  let top, left;
+
+  if(rect.right + mg + pw <= window.innerWidth - mg){
+    left = rect.right + mg;
+    top  = rect.top + rect.height/2 - ph/2;
+  } else if(rect.left - mg - pw >= mg){
+    left = rect.left - mg - pw;
+    top  = rect.top + rect.height/2 - ph/2;
+  } else {
+    left = rect.left + rect.width/2 - pw/2;
+    top  = rect.bottom + mg;
+    if(top+ph > window.innerHeight-mg) top = rect.top - ph - mg;
+  }
+  top  = Math.max(mg, Math.min(top,  window.innerHeight - ph - mg));
+  left = Math.max(mg, Math.min(left, window.innerWidth  - pw - mg));
+
+  picker.style.top  = top  + 'px';
+  picker.style.left = left + 'px';
+}
+
+function closePicker(){
+  const p=document.getElementById('picker');
+  p.classList.remove('show');
+  p.style.display='none';
+  S.activeEvid=null;
+}
+
+function outsideClose(e){
+  const p=document.getElementById('picker');
+  if(p && p.style.display!=='none' && !p.contains(e.target)){
+    if(!e.target.closest('.dot-slot')) closePicker();
+  }
+}
+
+function selectMood(evid, mood){
+  S.placed[evid] = mood;
+
+  const slot = document.getElementById('slot-'+evid);
+  if(slot){
+    slot.classList.add('placed');
+    slot.textContent = (EMOJIS[mood]||'') + ' ' + mood;
+    slot.style.top = yPos(mood)+'px';
+  }
+
+  closePicker();
+  sfxPlace();
+  redrawPreview();
+  updateCheckBtn();
+}
+
+// ══════════════════════════════════════════
+// PREVIEW CURVE (dashed, while answering)
+// ══════════════════════════════════════════
+function redrawPreview(){
+  const svg = document.getElementById('curveSvg');
+  if(!svg) return;
+  // Remove old preview path only (keep nothing else at this stage)
+  svg.querySelectorAll('.preview-path').forEach(el=>el.remove());
+
+  const grid = document.getElementById('chartGrid');
+  const gw = grid.offsetWidth || 500;
+  const colW = gw / EVENTS.length;
+
+  const pts = EVENTS.map((ev,i)=>{
+    const mood = S.correct[ev.id] ? ev.correct : S.placed[ev.id];
+    if(!mood) return null;
+    return {x:(i+.5)*colW, y:yPos(mood)};
+  }).filter(Boolean);
+
+  if(pts.length < 2) return;
+
+  let d = `M ${pts[0].x} ${pts[0].y}`;
+  for(let i=1;i<pts.length;i++){
+    const cpx1=pts[i-1].x+(pts[i].x-pts[i-1].x)*.45;
+    const cpx2=pts[i].x-(pts[i].x-pts[i-1].x)*.45;
+    d+=` C ${cpx1} ${pts[i-1].y}, ${cpx2} ${pts[i].y}, ${pts[i].x} ${pts[i].y}`;
+  }
+
+  const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+  path.setAttribute('class','preview-path');
+  path.setAttribute('d',d);
+  path.setAttribute('stroke','rgba(168,216,240,.28)');
+  path.setAttribute('stroke-width','2');
+  path.setAttribute('fill','none');
+  path.setAttribute('stroke-dasharray','6 5');
+  path.setAttribute('stroke-linecap','round');
+  svg.appendChild(path);
+}
+
+// ══════════════════════════════════════════
+// CHECK ANSWERS
+// ══════════════════════════════════════════
+function updateCheckBtn(){
+  const allFilled = EVENTS.every(ev=> S.correct[ev.id] || S.placed[ev.id]);
+  document.getElementById('btnCheck').disabled = !allFilled;
+}
+
+function checkAnswers(){
+  if(S.done) return;
+  let wrong=0, xpGained=0;
+
+  EVENTS.forEach(ev=>{
+    if(S.correct[ev.id]) return;
+    const placed = S.placed[ev.id];
+    const ok = placed === ev.correct;
+    const slot = document.getElementById('slot-'+ev.id);
+
+    if(ok){
+      S.correct[ev.id]=true;
+      if(slot){ slot.classList.add('correct'); slot.classList.remove('placed'); }
+      xpGained+=8;
+      incrCombo();
+    } else {
+      wrong++;
+      if(slot){ slot.classList.add('wrong'); }
+      setTimeout(()=>{
+        S.placed[ev.id]=null;
+        const s=document.getElementById('slot-'+ev.id);
+        if(s){ s.classList.remove('wrong','placed'); s.textContent='+'; s.style.top=(CHART_H/2)+'px'; }
+      }, 600);
+      resetCombo();
+    }
+  });
+
+  if(wrong>0){
+    if(xpGained>0){ addXP(xpGained); sfxOk(); }
+    else sfxNo();
+    document.getElementById('wrongCount').textContent=wrong;
+    document.getElementById('tryAgain').classList.add('show');
+    showFb('no',`❌ 有 ${wrong} 个情节选错了，已重置，请重新选择。`);
+    setTimeout(()=>{ redrawPreview(); updateCheckBtn(); }, 700);
+    return;
+  }
+
+  // ── ALL CORRECT ──
+  S.done = true;
+  addXP(xpGained + 20); // base + bonus
+  addBk();
+  sfxLvl();
+  document.getElementById('tryAgain').classList.remove('show');
+  showFb('ok','🎉 全部正确！获得额外奖励 +20 XP！');
+
+  // Build final curve panel
+  buildFinalCurve();
+
+  // Success section
+  const totalXP = xpGained + 20;
+  document.getElementById('successStars').textContent = '⭐⭐⭐';
+  document.getElementById('successBody').innerHTML =
+    `获得 <strong style="color:#f0c040;font-size:1.2rem;">${S.xp}</strong> XP　·　最高连击 <strong style="color:#f0c040">${S.maxCombo}</strong> 次`;
+  document.getElementById('successSec').classList.add('show');
+
+  document.getElementById('btnCheck').disabled=true;
+  showToast('🌟','第二关完成！','心情变化曲线已绘出！');
+  fireworks();
+}
+
+// ══════════════════════════════════════════
+// FINAL CURVE
+// ══════════════════════════════════════════
+function buildFinalCurve(){
+  document.getElementById('curvePanel').classList.add('show');
+
+  // Build a read-only chart
+  buildFinalChartUI();
+  // Then draw animated curve on top
+  requestAnimationFrame(()=> drawFinalCurve());
+}
+
+function buildFinalChartUI(){
+  const grid = document.getElementById('curveGrid');
+  const yAxis = document.getElementById('curveYAxis');
+  const xAxis = document.getElementById('curveXAxis');
+
+  grid.style.height = CHART_H+'px';
+  grid.innerHTML = `<svg id="curveFinalSvg" style="position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;overflow:visible;"></svg>`;
+  yAxis.innerHTML=''; xAxis.innerHTML='';
+  yAxis.style.height=CHART_H+'px';
+
+  Y_LEVELS.forEach(lv=>{
+    const d=document.createElement('div'); d.className='y-lbl'; d.textContent=lv.label;
+    yAxis.appendChild(d);
+  });
+  Y_LEVELS.forEach((lv,i)=>{
+    const l=document.createElement('div'); l.className='hline'+(i===2?' mid':'');
+    l.style.top=(i*ROW_H+ROW_H/2)+'px'; grid.appendChild(l);
+  });
+  const colPct=100/EVENTS.length;
+  EVENTS.forEach((ev,i)=>{
+    const vg=document.createElement('div'); vg.className='vguide'; vg.style.left=((i+.5)*colPct)+'%';
+    grid.appendChild(vg);
+    const xl=document.createElement('div'); xl.className='x-lbl';
+    xl.innerHTML=`<div class="ev-n">${i+1}</div><br>${ev.short}`;
+    xl.addEventListener('click',()=>showDetail(ev,i,xl));
+    xAxis.appendChild(xl);
+  });
+}
+
+function drawFinalCurve(){
+  const grid = document.getElementById('curveGrid');
+  const svg  = document.getElementById('curveFinalSvg');
+  if(!grid||!svg) return;
+
+  const gw = grid.offsetWidth || 500;
+  const colW = gw/EVENTS.length;
+
+  const pts = EVENTS.map((ev,i)=>({
+    x:(i+.5)*colW, y:yPos(ev.correct), mood:ev.correct
+  }));
+
+  // Gradient fill def
+  const defs=document.createElementNS('http://www.w3.org/2000/svg','defs');
+  const grad=document.createElementNS('http://www.w3.org/2000/svg','linearGradient');
+  grad.setAttribute('id','fgrad');grad.setAttribute('x1','0');grad.setAttribute('y1','0');grad.setAttribute('x2','0');grad.setAttribute('y2','1');
+  grad.innerHTML='<stop offset="0%" stop-color="#2d7dc8" stop-opacity=".42"/><stop offset="100%" stop-color="#2d7dc8" stop-opacity=".03"/>';
+  defs.appendChild(grad); svg.appendChild(defs);
+
+  let d=`M ${pts[0].x} ${pts[0].y}`;
+  for(let i=1;i<pts.length;i++){
+    const cpx1=pts[i-1].x+(pts[i].x-pts[i-1].x)*.45;
+    const cpx2=pts[i].x-(pts[i].x-pts[i-1].x)*.45;
+    d+=` C ${cpx1} ${pts[i-1].y}, ${cpx2} ${pts[i].y}, ${pts[i].x} ${pts[i].y}`;
+  }
+
+  // Fill
+  const fill=document.createElementNS('http://www.w3.org/2000/svg','path');
+  fill.setAttribute('d', d+` L ${pts[pts.length-1].x} ${CHART_H} L ${pts[0].x} ${CHART_H} Z`);
+  fill.setAttribute('fill','url(#fgrad)'); svg.appendChild(fill);
+
+  // Animated line
+  const line=document.createElementNS('http://www.w3.org/2000/svg','path');
+  line.setAttribute('d',d);
+  line.setAttribute('stroke','#2d7dc8');line.setAttribute('stroke-width','2.5');
+  line.setAttribute('fill','none');line.setAttribute('stroke-linecap','round');
+  line.style.filter='drop-shadow(0 0 6px rgba(45,125,200,.7))';
+  svg.appendChild(line);
+  const len = line.getTotalLength ? line.getTotalLength() : 1000;
+  line.style.strokeDasharray=len; line.style.strokeDashoffset=len;
+  line.style.transition='stroke-dashoffset 1.8s cubic-bezier(.4,0,.2,1)';
+  setTimeout(()=>{ line.style.strokeDashoffset='0'; }, 80);
+
+  // Dots + mood labels (staggered)
+  pts.forEach((p,i)=>{
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.style.opacity='0'; g.style.transition=`opacity .3s ${.35+i*.18}s`;
+
+    const circle=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circle.setAttribute('cx',p.x); circle.setAttribute('cy',p.y); circle.setAttribute('r','7');
+    circle.setAttribute('fill','#f0c040');
+    circle.setAttribute('stroke','#0b2040'); circle.setAttribute('stroke-width','2');
+    g.appendChild(circle);
+
+    // Label above or below depending on y position
+    const labelY = p.y > CHART_H*0.6 ? p.y-14 : p.y+20;
+    const txt=document.createElementNS('http://www.w3.org/2000/svg','text');
+    txt.setAttribute('x',p.x); txt.setAttribute('y',labelY);
+    txt.setAttribute('text-anchor','middle');
+    txt.setAttribute('fill','#f0c040');
+    txt.setAttribute('font-size','11'); txt.setAttribute('font-weight','bold');
+    txt.setAttribute('font-family','Noto Serif SC, serif');
+    txt.textContent=(EMOJIS[p.mood]||'')+' '+p.mood;
+    g.appendChild(txt);
+
+    // Event short label in grey below
+    const evTxt=document.createElementNS('http://www.w3.org/2000/svg','text');
+    evTxt.setAttribute('x',p.x); evTxt.setAttribute('y', CHART_H-4);
+    evTxt.setAttribute('text-anchor','middle');
+    evTxt.setAttribute('fill','rgba(168,216,240,.4)');
+    evTxt.setAttribute('font-size','9');
+    evTxt.setAttribute('font-family','Noto Serif SC, serif');
+    evTxt.textContent='情节'+(i+1);
+    g.appendChild(evTxt);
+
+    svg.appendChild(g);
+    setTimeout(()=>{ g.style.opacity='1'; }, 420+i*180);
+  });
+}
+
+// ══════════════════════════════════════════
+// RESET
+// ══════════════════════════════════════════
+function resetAll(){
+  if(S.done) return; // locked after completion
+  EVENTS.forEach(ev=>{ S.placed[ev.id]=null; });
+  document.getElementById('tryAgain').classList.remove('show');
+  document.getElementById('feedback').className='feedback';
+  document.getElementById('evDetail').classList.remove('show');
+  document.querySelectorAll('.x-lbl').forEach(el=>el.classList.remove('active-lbl'));
+  closePicker();
+  buildChart('chartGrid','yAxis','xAxis');
+  updateCheckBtn();
+}
+
+// ══════════════════════════════════════════
+// XP & COMBO
+// ══════════════════════════════════════════
+function addXP(amt){
+  S.xp+=amt;
+  spawnFloat(`+${amt} XP`);
+  updateXPBar();
+}
+
+function updateXPBar(){
+  const max=68; // 6*8 + 20 bonus
+  const pct=Math.min(100, S.xp/max*100);
+  document.getElementById('xpFill').style.width=pct+'%';
+  document.getElementById('xpNum').textContent=S.xp;
+}
+
+function incrCombo(){
+  S.combo++;
+  if(S.combo>S.maxCombo) S.maxCombo=S.combo;
+  document.getElementById('comboN').textContent=S.combo;
+  document.getElementById('comboWrap').classList.toggle('fire', S.combo>=3);
+  if(S.combo>=2) sfxCombo(S.combo);
+  if(S.combo>=3){
+    S.xp+=3; updateXPBar();
+    spawnCFloat();
+  }
+  if(S.combo===3) showToast('🔥','三连击！','+3 XP 连击奖励！');
+}
+
+function resetCombo(){
+  S.combo=0;
+  document.getElementById('comboN').textContent='0';
+  document.getElementById('comboWrap').classList.remove('fire');
+}
+
+// ══════════════════════════════════════════
+// FLOATS, TOAST, FIREWORKS, FEEDBACK
+// ══════════════════════════════════════════
+function spawnFloat(text, cls=''){
+  const el=document.createElement('div');
+  el.className='xp-float '+(cls);
+  el.textContent=text;
+  el.style.left=(window.innerWidth/2-30)+'px';
+  el.style.top=(window.innerHeight*.45)+'px';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),1350);
+}
+function spawnCFloat(){
+  const el=document.createElement('div');
+  el.className='xp-float cfloat';
+  el.textContent=`🔥 ${S.combo}连击!`;
+  el.style.left=(window.innerWidth/2-45)+'px';
+  el.style.top=(window.innerHeight*.38)+'px';
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),1400);
+}
+
+let tT;
+function showToast(icon,title,body){
+  clearTimeout(tT);
+  document.getElementById('tIcon').textContent=icon;
+  document.getElementById('tTitle').textContent=title;
+  document.getElementById('tBody').textContent=body;
+  const t=document.getElementById('toast');
+  t.classList.add('show');
+  tT=setTimeout(()=>t.classList.remove('show'),3200);
+}
+
+function showFb(type,msg){
+  const el=document.getElementById('feedback');
+  el.className='feedback show '+type;
+  el.textContent=msg;
+}
+
+function addBk(){ showToast('🪣','提桶成功！','鲸鱼又多了一桶水！'); }
+
+function fireworks(){
+  const em=['🎉','✨','🌟','💫','🎊','🐋','🌊','💙'];
+  for(let i=0;i<18;i++){
+    setTimeout(()=>{
+      const el=document.createElement('div'); el.className='fw';
+      el.textContent=em[Math.floor(Math.random()*em.length)];
+      const sx=Math.random()*window.innerWidth;
+      const sy=window.innerHeight*.6+Math.random()*window.innerHeight*.3;
+      el.style.left=sx+'px'; el.style.top=sy+'px';
+      const tx=(Math.random()-.5)*320, ty=-(Math.random()*400+100);
+      el.style.setProperty('--ft',`translate(${tx}px,${ty}px)`);
+      document.body.appendChild(el);
+      setTimeout(()=>el.remove(),1200);
+    },i*75);
+  }
+}
+</script>
+</body>
+</html>
