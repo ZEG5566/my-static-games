@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>一件让我难忘的事 · 互动学习</title>
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=ZCOOL+XiaoWei&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #1a1008; --paper: #fdf6e3; --amber: #d4850a;
+  --red: #c0392b; --green: #27ae60; --gold: #f0c040;
+  --muted: #8a7560; --card-bg: #fffef5; --shadow: rgba(100,60,10,0.18);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Noto Sans SC',sans-serif;background:var(--paper);color:var(--ink);min-height:100vh;
+  background-image:radial-gradient(ellipse at 20% 0%,rgba(212,133,10,0.08) 0%,transparent 60%),radial-gradient(ellipse at 80% 100%,rgba(192,57,43,0.06) 0%,transparent 60%);}
+header{text-align:center;padding:1.5rem 1rem 0.8rem;border-bottom:2px solid rgba(212,133,10,0.3);background:linear-gradient(180deg,rgba(212,133,10,0.07) 0%,transparent 100%);}
+header h1{font-family:'Ma Shan Zheng',cursive;font-size:clamp(1.5rem,4vw,2.5rem);color:var(--amber);text-shadow:2px 2px 0 rgba(0,0,0,0.1);}
+header p{color:var(--muted);font-size:0.85rem;margin-top:0.2rem;}
+#score-display{position:fixed;top:10px;right:12px;background:var(--amber);color:#fff;border-radius:20px;padding:0.3rem 0.9rem;font-weight:700;font-size:1rem;box-shadow:0 2px 8px rgba(0,0,0,0.2);z-index:100;}
+#progress-bar-wrap{display:flex;align-items:center;justify-content:center;gap:0.4rem;padding:0.7rem 0.5rem;background:rgba(212,133,10,0.05);border-bottom:1px solid rgba(212,133,10,0.15);flex-wrap:wrap;}
+.prog-step{display:flex;flex-direction:column;align-items:center;gap:0.15rem;cursor:pointer;}
+.prog-dot{width:34px;height:34px;border-radius:50%;background:#ddd;color:#aaa;font-size:0.9rem;display:flex;align-items:center;justify-content:center;font-weight:700;transition:all 0.3s;border:2px solid transparent;}
+.prog-dot.done{background:var(--green);color:#fff;border-color:var(--green);}
+.prog-dot.active{background:var(--amber);color:#fff;border-color:var(--amber);box-shadow:0 0 0 3px rgba(212,133,10,0.3);}
+.prog-label{font-size:0.58rem;color:var(--muted);white-space:nowrap;}
+.prog-line{width:22px;height:2px;background:#ddd;margin-bottom:16px;}
+.prog-line.done{background:var(--green);}
+.screen{display:none;padding:1.2rem 1rem 3rem;max-width:800px;margin:0 auto;}
+.screen.active{display:block;animation:fadeIn 0.4s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+@keyframes popIn{from{transform:scale(0.85);opacity:0}to{transform:scale(1);opacity:1}}
+.section-title{font-family:'ZCOOL XiaoWei',serif;font-size:1.4rem;color:var(--amber);margin-bottom:0.3rem;display:flex;align-items:center;gap:0.4rem;}
+.section-desc{color:var(--muted);font-size:0.86rem;margin-bottom:1.2rem;line-height:1.6;}
+.card{background:var(--card-bg);border:1px solid rgba(212,133,10,0.25);border-radius:12px;padding:1.1rem 1.3rem;margin-bottom:1rem;box-shadow:0 2px 10px var(--shadow);}
+.btn{display:inline-flex;align-items:center;gap:0.3rem;padding:0.55rem 1.3rem;border-radius:25px;border:none;font-family:'Noto Sans SC',sans-serif;font-size:0.92rem;font-weight:700;cursor:pointer;transition:all 0.2s;}
+.btn-primary{background:var(--amber);color:#fff;box-shadow:0 2px 8px rgba(212,133,10,0.3);}
+.btn-primary:hover{background:#b8700a;transform:translateY(-1px);}
+.btn-secondary{background:transparent;color:var(--amber);border:2px solid var(--amber);}
+.btn-secondary:hover{background:rgba(212,133,10,0.08);}
+.btn-sm{padding:0.38rem 0.9rem;font-size:0.82rem;}
+.nav-row{display:flex;gap:0.7rem;flex-wrap:wrap;margin-top:1.3rem;}
+
+/* WELCOME */
+.welcome-img{font-size:4.5rem;margin-bottom:0.8rem;animation:float 3s ease-in-out infinite;display:block;text-align:center;}
+.welcome-title{font-family:'Ma Shan Zheng',cursive;font-size:clamp(1.4rem,4vw,2.2rem);color:var(--amber);line-height:1.3;margin-bottom:0.5rem;text-align:center;}
+.welcome-sub{color:var(--muted);margin-bottom:1.5rem;line-height:1.7;text-align:center;}
+.game-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.8rem;margin:1.2rem 0;}
+.game-card{background:var(--card-bg);border:1px solid rgba(212,133,10,0.25);border-radius:10px;padding:0.9rem;box-shadow:0 2px 6px var(--shadow);text-align:center;}
+.game-card .icon{font-size:2rem;display:block;margin-bottom:0.3rem;}
+.game-card .name{font-weight:700;font-size:0.9rem;color:var(--ink);margin:0.15rem 0;}
+.game-card .label{font-size:0.75rem;color:var(--muted);}
+
+/* STORY */
+.story-text{font-family:'ZCOOL XiaoWei',serif;font-size:1rem;line-height:2.1;color:var(--ink);}
+.highlight{background:linear-gradient(120deg,rgba(240,192,64,0.45) 0%,rgba(240,192,64,0.15) 100%);border-radius:3px;cursor:pointer;border-bottom:2px solid var(--amber);transition:background 0.2s;}
+.highlight:hover{background:rgba(240,192,64,0.6);}
+.tooltip-box{display:none;position:fixed;background:var(--ink);color:var(--paper);border-radius:10px;padding:0.6rem 0.9rem;font-size:0.85rem;line-height:1.6;max-width:250px;z-index:200;box-shadow:0 4px 20px rgba(0,0,0,0.35);}
+.tooltip-box.show{display:block;animation:popIn 0.2s ease;}
+.tooltip-word{font-family:'Ma Shan Zheng',cursive;font-size:1.15rem;color:var(--gold);margin-bottom:0.25rem;}
+.tooltip-close{float:right;cursor:pointer;color:var(--gold);font-size:1rem;margin-left:0.4rem;}
+
+/* VOCAB */
+.vocab-grid{display:grid;grid-template-columns:1fr 1fr;gap:0.6rem;margin-bottom:1rem;}
+.vocab-col{display:flex;flex-direction:column;gap:0.5rem;}
+.vocab-chip{padding:0.6rem 0.8rem;border-radius:22px;border:2px solid rgba(212,133,10,0.3);background:var(--card-bg);cursor:pointer;font-family:'ZCOOL XiaoWei',serif;font-size:0.95rem;text-align:center;transition:all 0.2s;user-select:none;}
+.vocab-chip:hover{border-color:var(--amber);background:rgba(212,133,10,0.07);}
+.vocab-chip.selected{border-color:var(--amber);background:rgba(212,133,10,0.18);color:var(--amber);font-weight:700;}
+.vocab-chip.correct{border-color:var(--green);background:rgba(39,174,96,0.12);color:var(--green);pointer-events:none;}
+.vocab-chip.wrong{border-color:var(--red);background:rgba(192,57,43,0.1);color:var(--red);animation:shake 0.4s;}
+.vocab-feedback{padding:0.65rem 1rem;border-radius:8px;font-size:0.87rem;margin-top:0.4rem;display:none;line-height:1.6;}
+.vocab-feedback.show{display:block;animation:fadeIn 0.3s;}
+.vocab-feedback.ok{background:rgba(39,174,96,0.1);color:#1e7a45;border-left:3px solid var(--green);}
+.vocab-feedback.err{background:rgba(192,57,43,0.07);color:#922b21;border-left:3px solid var(--red);}
+
+/* MOUNTAIN */
+.mountain-stages{display:flex;flex-direction:column;gap:0.7rem;margin-bottom:0.8rem;}
+.stage-row{display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0.9rem;border-radius:10px;background:var(--card-bg);border:1px solid rgba(212,133,10,0.2);box-shadow:0 1px 6px var(--shadow);}
+.stage-icon{font-size:1.5rem;flex-shrink:0;}
+.stage-info{flex:1;}
+.stage-name{font-family:'ZCOOL XiaoWei',serif;font-weight:700;font-size:0.95rem;margin-bottom:0.2rem;}
+.stage-desc{font-size:0.75rem;color:var(--muted);}
+.drag-bank{display:flex;flex-wrap:wrap;gap:0.5rem;justify-content:center;margin:0.8rem 0;}
+.drag-card{padding:0.45rem 0.8rem;border-radius:8px;border:2px dashed var(--amber);background:var(--card-bg);font-size:0.84rem;cursor:grab;user-select:none;transition:all 0.2s;color:var(--ink);font-family:'ZCOOL XiaoWei',serif;}
+.drag-card:hover{background:rgba(212,133,10,0.1);transform:scale(1.03);}
+.drag-card.dragging{opacity:0.4;cursor:grabbing;}
+.drag-card.used{opacity:0.3;cursor:default;pointer-events:none;border-style:solid;}
+.drop-zone{min-width:105px;min-height:32px;border:2px dashed rgba(212,133,10,0.45);border-radius:6px;padding:0.25rem 0.4rem;background:rgba(212,133,10,0.03);text-align:center;font-size:0.78rem;color:var(--muted);transition:all 0.2s;display:flex;align-items:center;justify-content:center;}
+.drop-zone.over{background:rgba(212,133,10,0.13);border-color:var(--amber);}
+.drop-zone.filled{border-style:solid;color:var(--ink);font-family:'ZCOOL XiaoWei',serif;font-size:0.84rem;background:rgba(212,133,10,0.07);}
+.drop-zone.correct{border-color:var(--green);background:rgba(39,174,96,0.09);color:var(--green);}
+.drop-zone.wrong{border-color:var(--red);background:rgba(192,57,43,0.07);color:var(--red);}
+
+/* SEQUENCE */
+.seq-cards{display:flex;flex-direction:column;gap:0.5rem;}
+.seq-item{display:flex;align-items:center;gap:0.7rem;padding:0.7rem 0.9rem;border-radius:10px;background:var(--card-bg);border:2px solid rgba(212,133,10,0.22);cursor:grab;user-select:none;transition:all 0.2s;box-shadow:0 1px 5px var(--shadow);}
+.seq-item:hover{border-color:var(--amber);transform:translateX(2px);}
+.seq-item.dragging{opacity:0.45;cursor:grabbing;}
+.seq-handle{color:var(--muted);font-size:1.1rem;flex-shrink:0;}
+.seq-num{width:26px;height:26px;border-radius:50%;background:var(--amber);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:0.8rem;flex-shrink:0;}
+.seq-text{font-family:'ZCOOL XiaoWei',serif;font-size:0.9rem;flex:1;line-height:1.5;}
+.seq-result{font-size:1.05rem;}
+
+/* QUIZ */
+.quiz-q{font-family:'ZCOOL XiaoWei',serif;font-size:1rem;margin-bottom:0.9rem;line-height:1.7;}
+.quiz-num{font-size:0.75rem;color:var(--muted);margin-bottom:0.35rem;letter-spacing:0.04em;}
+.quiz-options{display:flex;flex-direction:column;gap:0.45rem;}
+.quiz-opt{padding:0.7rem 0.9rem;border-radius:8px;border:2px solid rgba(212,133,10,0.22);background:var(--card-bg);cursor:pointer;font-size:0.9rem;transition:all 0.2s;font-family:'ZCOOL XiaoWei',serif;text-align:left;}
+.quiz-opt:hover:not(.disabled){border-color:var(--amber);background:rgba(212,133,10,0.07);}
+.quiz-opt.correct{border-color:var(--green);background:rgba(39,174,96,0.1);color:var(--green);}
+.quiz-opt.wrong{border-color:var(--red);background:rgba(192,57,43,0.07);color:var(--red);}
+.quiz-opt.disabled{cursor:default;}
+.quiz-explain{margin-top:0.7rem;padding:0.7rem 0.9rem;border-radius:8px;font-size:0.85rem;line-height:1.65;display:none;}
+.quiz-explain.show{display:block;animation:fadeIn 0.3s;}
+.quiz-explain.ok{background:rgba(39,174,96,0.09);border-left:3px solid var(--green);color:#1e7a45;}
+.quiz-explain.err{background:rgba(192,57,43,0.06);border-left:3px solid var(--red);color:#922b21;}
+#quiz-bar{height:5px;background:rgba(212,133,10,0.18);border-radius:5px;margin-bottom:1rem;overflow:hidden;}
+#quiz-bar-inner{height:100%;background:var(--amber);border-radius:5px;transition:width 0.4s;}
+
+/* FINAL */
+#screen-6{text-align:center;padding-top:2rem;}
+.star-row{font-size:2.2rem;letter-spacing:0.3rem;margin:0.4rem 0;}
+.final-score{font-size:3.2rem;font-weight:700;color:var(--amber);font-family:'Ma Shan Zheng',cursive;}
+.medal{font-size:4.5rem;display:block;margin:0.4rem auto;animation:float 2s ease-in-out infinite;}
+.result-list{text-align:left;margin:1.2rem 0;}
+.result-row{display:flex;align-items:center;justify-content:space-between;padding:0.45rem 0;border-bottom:1px dashed rgba(212,133,10,0.2);font-size:0.9rem;}
+.result-pts{font-weight:700;color:var(--amber);}
+
+/* MODAL */
+#modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:300;align-items:center;justify-content:center;}
+#modal-overlay.show{display:flex;}
+.modal-box{background:var(--paper);border-radius:16px;padding:1.4rem 1.8rem;max-width:400px;width:92%;box-shadow:0 8px 40px rgba(0,0,0,0.3);animation:popIn 0.3s ease;text-align:center;}
+.modal-icon{font-size:2.8rem;margin-bottom:0.4rem;}
+.modal-title{font-family:'Ma Shan Zheng',cursive;font-size:1.4rem;color:var(--amber);margin-bottom:0.4rem;}
+.modal-body{font-size:0.88rem;color:var(--muted);line-height:1.7;margin-bottom:0.9rem;}
+
+/* TOAST */
+#toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:var(--paper);padding:0.5rem 1.3rem;border-radius:22px;font-size:0.87rem;z-index:400;display:none;box-shadow:0 4px 16px rgba(0,0,0,0.3);}
+#toast.show{display:block;animation:fadeIn 0.3s;}
+.star-burst{position:fixed;pointer-events:none;z-index:500;font-size:1.4rem;transition:all 0.8s;opacity:1;}
+</style>
+</head>
+<body>
+
+<div id="score-display">⭐ <span id="score-val">0</span> 分</div>
+
+<div id="tooltip-box" class="tooltip-box">
+  <span class="tooltip-close" id="tt-close">✕</span>
+  <div class="tooltip-word" id="tt-word"></div>
+  <div id="tt-def"></div>
+</div>
+
+<div id="modal-overlay">
+  <div class="modal-box">
+    <div class="modal-icon" id="modal-icon">🎉</div>
+    <div class="modal-title" id="modal-title"></div>
+    <div class="modal-body" id="modal-body"></div>
+    <button class="btn btn-primary" id="modal-ok-btn">好的！</button>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<header>
+  <h1>📖 一件让我难忘的事</h1>
+  <p>五年级第6课 · 互动学习游戏</p>
+</header>
+
+<div id="progress-bar-wrap">
+  <div class="prog-step" data-screen="0">
+    <div class="prog-dot active" id="pd-0">🏠</div>
+    <div class="prog-label">开始</div>
+  </div>
+  <div class="prog-line" id="pl-0"></div>
+  <div class="prog-step" data-screen="1">
+    <div class="prog-dot" id="pd-1">📖</div>
+    <div class="prog-label">课文探索</div>
+  </div>
+  <div class="prog-line" id="pl-1"></div>
+  <div class="prog-step" data-screen="2">
+    <div class="prog-dot" id="pd-2">🔤</div>
+    <div class="prog-label">词语配对</div>
+  </div>
+  <div class="prog-line" id="pl-2"></div>
+  <div class="prog-step" data-screen="3">
+    <div class="prog-dot" id="pd-3">⛰️</div>
+    <div class="prog-label">故事山</div>
+  </div>
+  <div class="prog-line" id="pl-3"></div>
+  <div class="prog-step" data-screen="4">
+    <div class="prog-dot" id="pd-4">🔀</div>
+    <div class="prog-label">情节排序</div>
+  </div>
+  <div class="prog-line" id="pl-4"></div>
+  <div class="prog-step" data-screen="5">
+    <div class="prog-dot" id="pd-5">❓</div>
+    <div class="prog-label">理解问答</div>
+  </div>
+  <div class="prog-line" id="pl-5"></div>
+  <div class="prog-step" data-screen="6">
+    <div class="prog-dot" id="pd-6">🏆</div>
+    <div class="prog-label">成绩单</div>
+  </div>
+</div>
+
+<!-- SCREEN 0 -->
+<div id="screen-0" class="screen active">
+  <span class="welcome-img">🏙️</span>
+  <div class="welcome-title">一件让我难忘的事</div>
+  <p class="welcome-sub">在一个风大的早晨，一件意想不到的事情发生了……<br>准备好踏上这段学习之旅了吗？</p>
+  <div class="game-list">
+    <div class="game-card"><span class="icon">📖</span><div class="name">课文探索</div><div class="label">点击词语，了解意思</div></div>
+    <div class="game-card"><span class="icon">🔤</span><div class="name">词语配对</div><div class="label">词语与意思连连看</div></div>
+    <div class="game-card"><span class="icon">⛰️</span><div class="name">故事山</div><div class="label">拖拽情节到正确位置</div></div>
+    <div class="game-card"><span class="icon">🔀</span><div class="name">情节排序</div><div class="label">把事件排好顺序</div></div>
+    <div class="game-card"><span class="icon">❓</span><div class="name">理解问答</div><div class="label">8道课文理解题</div></div>
+  </div>
+  <div style="text-align:center;">
+    <button class="btn btn-primary" id="btn-start" style="font-size:1.05rem;padding:0.75rem 2.2rem;">🚀 开始学习！</button>
+  </div>
+</div>
+
+<!-- SCREEN 1 -->
+<div id="screen-1" class="screen">
+  <div class="section-title">📖 课文探索</div>
+  <p class="section-desc">阅读课文，点击<span style="background:rgba(240,192,64,0.4);border-bottom:2px solid var(--amber);padding:0 3px;border-radius:2px;">黄色词语</span>学习它们的意思。每学一个词语，获得 <strong>5分</strong>！</p>
+  <div class="card"><div class="story-text" id="story-container"></div></div>
+  <div class="nav-row">
+    <button class="btn btn-secondary" data-go="0">← 返回</button>
+    <button class="btn btn-primary" data-go="2">去词语配对 →</button>
+  </div>
+</div>
+
+<!-- SCREEN 2 -->
+<div id="screen-2" class="screen">
+  <div class="section-title">🔤 词语配对</div>
+  <p class="section-desc">把左边的词语和右边的意思配对。答对得 <strong>10分</strong>，答错扣 <strong>3分</strong>！</p>
+  <div style="text-align:center;margin-bottom:0.8rem;font-size:0.95rem;color:var(--muted);">进度：<span id="vocab-matched">0</span> / <span id="vocab-total">0</span></div>
+  <div class="vocab-grid" id="vocab-grid"></div>
+  <div id="vocab-feedback" class="vocab-feedback"></div>
+  <div class="nav-row">
+    <button class="btn btn-secondary" data-go="1">← 返回</button>
+    <button class="btn btn-primary" data-go="3">去故事山 →</button>
+  </div>
+</div>
+
+<!-- SCREEN 3 -->
+<div id="screen-3" class="screen">
+  <div class="section-title">⛰️ 故事山</div>
+  <p class="section-desc">把下方的情节卡片拖到故事山的正确位置上！拖对一个得 <strong>15分</strong>。</p>
+  <div class="mountain-stages" id="mountain-stages"></div>
+  <div style="text-align:center;margin:0.4rem 0 0.2rem;font-size:0.82rem;color:var(--muted);">📦 情节卡片（拖到上方对应的位置）</div>
+  <div class="drag-bank" id="drag-bank-mtn"></div>
+  <div style="text-align:center;margin-top:0.9rem;display:flex;gap:0.6rem;justify-content:center;flex-wrap:wrap;">
+    <button class="btn btn-primary btn-sm" id="btn-check-mtn">✅ 检查答案</button>
+    <button class="btn btn-secondary btn-sm" id="btn-reset-mtn">🔄 重置</button>
+  </div>
+  <div class="nav-row">
+    <button class="btn btn-secondary" data-go="2">← 返回</button>
+    <button class="btn btn-primary" data-go="4">去情节排序 →</button>
+  </div>
+</div>
+
+<!-- SCREEN 4 -->
+<div id="screen-4" class="screen">
+  <div class="section-title">🔀 情节排序</div>
+  <p class="section-desc">把下面的句子拖拽排成正确的顺序。排对全部得 <strong>20分</strong>！</p>
+  <div class="seq-cards" id="seq-cards"></div>
+  <div style="text-align:center;margin-top:0.9rem;display:flex;gap:0.6rem;justify-content:center;flex-wrap:wrap;">
+    <button class="btn btn-primary btn-sm" id="btn-check-seq">✅ 检查顺序</button>
+    <button class="btn btn-secondary btn-sm" id="btn-shuffle-seq">🔀 重新打乱</button>
+  </div>
+  <div class="nav-row">
+    <button class="btn btn-secondary" data-go="3">← 返回</button>
+    <button class="btn btn-primary" data-go="5">去理解问答 →</button>
+  </div>
+</div>
+
+<!-- SCREEN 5 -->
+<div id="screen-5" class="screen">
+  <div class="section-title">❓ 理解问答</div>
+  <p class="section-desc">根据课文内容回答问题。答对每题得 <strong>10分</strong>！</p>
+  <div id="quiz-bar"><div id="quiz-bar-inner" style="width:0%"></div></div>
+  <div id="quiz-container"></div>
+  <div class="nav-row" id="quiz-nav" style="display:none;">
+    <button class="btn btn-secondary" data-go="4">← 返回</button>
+    <button class="btn btn-primary" data-go="6">查看成绩单 →</button>
+  </div>
+</div>
+
+<!-- SCREEN 6 -->
+<div id="screen-6" class="screen" style="text-align:center;padding-top:2rem;">
+  <span class="medal" id="final-medal">🏅</span>
+  <div class="final-score" id="final-score-num">0</div>
+  <div style="font-size:0.95rem;color:var(--muted);margin-bottom:0.4rem;">总分</div>
+  <div class="star-row" id="final-stars">☆☆☆☆☆</div>
+  <div class="card result-list" id="result-breakdown"></div>
+  <p style="color:var(--muted);font-size:0.85rem;line-height:1.7;margin:0.9rem 0 1.3rem;">诚实和善良是人与人之间最美好的品质。<br>这个故事让我们看到，好人就在我们身边。💛</p>
+  <button class="btn btn-primary" id="btn-restart" style="font-size:0.95rem;padding:0.65rem 1.8rem;">🔄 再玩一次</button>
+</div>
+
+<script>
+// ===== DATA =====
+const storySegments = [
+  {text:`离我家不远有一个热闹的邻里购物中心，那里有一家银行和一些商店。每当我经过银行时，都会想起一件事。`},
+  {text:`\n\n那是一个早晨，我赶着去上学。天色`},
+  {text:`阴沉沉`,vocab:true,word:`阴沉沉`,def:`形容天空乌云密布、昏暗的样子，让人感觉快要下雨了。`},
+  {text:`的，风很大。我只顾低头往前走，在银行门口，不小心撞到了一位老伯伯。他的身体`},
+  {text:`摇晃`,vocab:true,word:`摇晃`,def:`来回摆动的样子。在文中描写老伯伯被撞后站不稳的情景。`},
+  {text:`了一下，倒退了几步，好不容易站稳，可是手中的一叠钞票却掉在地上。`},
+  {text:`\n\n我赶紧上前扶住老伯伯，正想把钞票捡起来，一阵大风吹过，钞票飞了起来。`},
+  {text:`\n\n几个路人看见了，`},
+  {text:`争先恐后`,vocab:true,word:`争先恐后`,def:`成语。形容大家都抢着向前，唯恐落在别人后面。`},
+  {text:`地向钞票飘走的方向跑去，有的还高声喊着："捡钱啊！捡钱啊！"`},
+  {text:`\n\n看到眼前的情景，我和老伯伯都`},
+  {text:`呆住`,vocab:true,word:`呆住了`,def:`因为惊讶或不知所措而愣在原地，无法反应。`},
+  {text:`了。我傻傻地站着，不知如何是好。`},
+  {text:`\n\n等我回过神来，正想上前阻拦，不料那几个人`},
+  {text:`不约而同`,vocab:true,word:`不约而同`,def:`成语。没有事先商量，却做出了相同的举动。`},
+  {text:`地回来了。他们把捡到的钞票交给老伯伯。老伯伯`},
+  {text:`喜出望外`,vocab:true,word:`喜出望外`,def:`成语。遇到了出乎意料的好事而非常高兴。`},
+  {text:`，连声说："谢谢！谢谢！麻烦你们了！"`},
+  {text:`\n\n要老伯伯把钱数一数。老伯伯数完一遍，又数了一遍，脸上露出`},
+  {text:`不解`,vocab:true,word:`不解的神情`,def:`困惑、不明白的表情。`},
+  {text:`的神情。`},
+  {text:`\n\n我问他钱是不是少了，他说："不，是多出了十块钱。"`},
+  {text:`\n\n就在这时，一位阿姨不好意思地说："多出来的钱应该是我的。我要去便利店买东西，刚才只顾着帮您捡钱，结果把自己的钱也给了您。"听了阿姨的话，我觉得十分感动，原来在我们的周围有这么多`},
+  {text:`诚实`,vocab:true,word:`诚实、善良`,def:`诚实：说话做事不欺骗别人。善良：心地好，乐于帮助别人。这正是这篇课文所颂扬的品质。`},
+  {text:`、善良的人。`},
+  {text:`\n\n这件事已经过去很久了，现在回忆起来，仍然`},
+  {text:`历历在目`,vocab:true,word:`历历在目`,def:`成语。过去的事物清晰地出现在眼前，好像亲眼看见一样。`},
+  {text:`，让我十分难忘。`}
+];
+
+const vocabPairs = [
+  {word:`争先恐后`,def:`大家都抢着向前，唯恐落后`},
+  {word:`不约而同`,def:`没有商量，却做出相同的举动`},
+  {word:`喜出望外`,def:`遇到意外的好事而非常高兴`},
+  {word:`历历在目`,def:`往事清晰地浮现在眼前`},
+  {word:`阴沉沉`,def:`天色昏暗，像要下雨的样子`},
+  {word:`不解`,def:`感到困惑，不明白`},
+];
+
+const mountainStages = [
+  {id:`s1`,label:`🌅 开端`,desc:`故事的背景和人物登场`,answer:`我赶着去上学，风很大`},
+  {id:`s2`,label:`🌀 发展`,desc:`事情开始变化`,answer:`钞票被风吹走，路人追去捡`},
+  {id:`s3`,label:`⛰️ 高潮`,desc:`最紧张、最让人意外的时刻`,answer:`路人全部归还钞票，钱多了10元`},
+  {id:`s4`,label:`🌤️ 结局`,desc:`问题得到解决`,answer:`阿姨说明多出的钱是她的`},
+  {id:`s5`,label:`💭 启示`,desc:`故事给我们的感悟`,answer:`周围有很多诚实善良的人`},
+];
+const mountainCards = [
+  `我赶着去上学，风很大`,
+  `钞票被风吹走，路人追去捡`,
+  `路人全部归还钞票，钱多了10元`,
+  `阿姨说明多出的钱是她的`,
+  `周围有很多诚实善良的人`,
+];
+
+const seqData = [
+  {id:1,text:`"我"在银行门口不小心撞倒老伯伯，钞票掉落。`},
+  {id:2,text:`大风把钞票吹走，路人争先恐后地追去捡。`},
+  {id:3,text:`"我"和老伯伯担心钱被拿走，呆住了。`},
+  {id:4,text:`路人不约而同地回来，把钞票还给老伯伯。`},
+  {id:5,text:`老伯伯数钱后发现多了十块。`},
+  {id:6,text:`阿姨说明自己不小心把钱也给了老伯伯。`},
+  {id:7,text:`"我"深受感动，觉得周围有许多诚实善良的人。`},
+];
+
+const quizData = [
+  {q:`"我"当时为什么要低头走路？`,opts:[`因为太害羞`,`因为天色阴沉沉、风很大`,`因为在找东西`,`因为在想问题`],ans:1,explain:`文中写道"天色阴沉沉的，风很大"，"我"因此只顾低头往前走。`},
+  {q:`老伯伯的钞票为什么会飞起来？`,opts:[`钞票太轻了`,`老伯伯扔了出去`,`一阵大风吹过`,`路人故意抢走`],ans:2,explain:`课文说"一阵大风吹过，钞票飞了起来"。`},
+  {q:`"争先恐后"在文中描写的是什么情景？`,opts:[`老伯伯跑去买东西`,`路人争着去捡钞票`,`同学们抢着回答问题`,`店主争着招揽顾客`],ans:1,explain:`文中用"争先恐后"形容路人争着向钞票飘走的方向跑去。`},
+  {q:`老伯伯数完钱后，为什么露出"不解的神情"？`,opts:[`钱少了`,`钱全不见了`,`钱多出了十块`,`钱湿掉了`],ans:2,explain:`老伯伯数了两遍，发现钱多出了十块，感到困惑。`},
+  {q:`钱为什么会多出十块？`,opts:[`路人自己添了钱`,`老伯伯数错了`,`一位阿姨不小心把自己的钱也给了老伯伯`,`银行多给了`],ans:2,explain:`阿姨说自己帮忙捡钱时不小心把自己的钱也给了老伯伯。`},
+  {q:`"不约而同"说明了什么？`,opts:[`路人事先商量好要还钱`,`路人虽然没商量，却都选择了归还钞票`,`路人被警察要求还钱`,`路人因为怕被发现才还钱`],ans:1,explain:`"不约而同"指没有事先商量却做出相同举动，体现了路人自发的诚实行为。`},
+  {q:`这件事发生在哪里？`,opts:[`便利店门口`,`学校大门`,`邻里购物中心的银行门口`,`"我"家附近的公园`],ans:2,explain:`课文开头说"每当我经过银行时，都会想起一件事"，事情就发生在银行门口。`},
+  {q:`文中的"我"经过这件事后，有什么感受？`,opts:[`很后悔撞倒了老伯伯`,`很害怕遇到这种情况`,`十分感动，感受到周围有许多诚实善良的人`,`觉得路人很奇怪`],ans:2,explain:`文末写道"我觉得十分感动，原来在我们的周围有这么多诚实、善良的人"。`},
+];
+
+// ===== STATE =====
+let score = 0;
+let screenScores = {story:0,vocab:0,mountain:0,seq:0,quiz:0};
+let vocabLearned = new Set();
+let vocabSelected = {left:null,right:null};
+let vocabMatched = new Set();
+let mountainAnswers = {};
+let mountainChecked = false;
+let seqOrder = [];
+let seqDragSrc = null;
+let mountainCardMap = {};
+let quizIdx = 0;
+let mountainDoneScore = 0;
+let seqDoneScore = 0;
+
+// ===== UTILS =====
+function addScore(n){
+  score += n;
+  document.getElementById('score-val').textContent = score;
+  if(n > 0) burstStars();
+}
+function burstStars(){
+  const el = document.createElement('div');
+  el.className = 'star-burst';
+  el.textContent = '⭐';
+  el.style.cssText = 'top:'+(Math.random()*40+5)+'%;left:'+(Math.random()*80+10)+'%;';
+  document.body.appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transform='translate('+(Math.random()-0.5)*100+'px,-80px) scale(1.4)'; },50);
+  setTimeout(()=>el.remove(),900);
+}
+function showToast(msg,dur){
+  dur = dur||2000;
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),dur);
+}
+function showModal(icon,title,body){
+  document.getElementById('modal-icon').textContent = icon;
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-body').innerHTML = body;
+  document.getElementById('modal-overlay').classList.add('show');
+}
+function closeModal(){ document.getElementById('modal-overlay').classList.remove('show'); }
+
+// ===== NAVIGATION =====
+function goScreen(n){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById('screen-'+n).classList.add('active');
+  updateProgress(n);
+  if(n===6) buildFinal();
+  window.scrollTo(0,0);
+}
+function updateProgress(active){
+  for(let i=0;i<=6;i++){
+    const dot = document.getElementById('pd-'+i);
+    if(!dot) continue;
+    dot.classList.remove('active','done');
+    if(i<active) dot.classList.add('done');
+    else if(i===active) dot.classList.add('active');
+    if(i<6){
+      const line = document.getElementById('pl-'+i);
+      if(line){ line.classList.remove('done'); if(i<active) line.classList.add('done'); }
+    }
+  }
+}
+
+// ===== SCREEN 1: STORY =====
+function buildStory(){
+  const container = document.getElementById('story-container');
+  container.innerHTML = '';
+  storySegments.forEach((seg,i)=>{
+    if(seg.text.startsWith('\n\n')){
+      container.appendChild(document.createElement('br'));
+      container.appendChild(document.createElement('br'));
+      const rest = seg.text.slice(2);
+      if(rest) container.appendChild(document.createTextNode(rest));
+    } else if(seg.vocab){
+      const span = document.createElement('span');
+      span.className = 'highlight';
+      span.textContent = seg.text;
+      span.dataset.idx = i;
+      span.dataset.word = seg.word;
+      span.dataset.def = seg.def;
+      container.appendChild(span);
+    } else {
+      container.appendChild(document.createTextNode(seg.text));
+    }
+  });
+  container.addEventListener('click',function(e){
+    const sp = e.target.closest('.highlight');
+    if(!sp) return;
+    showVocabTooltip(e, sp.dataset.word, sp.dataset.def, parseInt(sp.dataset.idx));
+  });
+}
+function showVocabTooltip(e, word, def, idx){
+  const box = document.getElementById('tooltip-box');
+  document.getElementById('tt-word').textContent = word;
+  document.getElementById('tt-def').textContent = def;
+  const x = Math.min(e.clientX+10, window.innerWidth-265);
+  const y = Math.min(e.clientY+10, window.innerHeight-130);
+  box.style.left = x+'px'; box.style.top = y+'px';
+  box.classList.add('show');
+  if(!vocabLearned.has(idx)){
+    vocabLearned.add(idx);
+    addScore(5); screenScores.story += 5;
+    showToast('✨ 学会了「'+word+'」！+5分');
+  }
+}
+document.addEventListener('click',function(e){
+  if(!e.target.closest('.highlight') && !e.target.closest('#tooltip-box'))
+    document.getElementById('tooltip-box').classList.remove('show');
+});
+
+// ===== SCREEN 2: VOCAB =====
+function buildVocab(){
+  vocabMatched.clear(); vocabSelected={left:null,right:null};
+  const words = vocabPairs.map(v=>v.word).sort(()=>Math.random()-0.5);
+  const defs = vocabPairs.map(v=>v.def).sort(()=>Math.random()-0.5);
+  document.getElementById('vocab-total').textContent = vocabPairs.length;
+  document.getElementById('vocab-matched').textContent = 0;
+  const grid = document.getElementById('vocab-grid');
+  grid.innerHTML = '';
+  const lc = document.createElement('div'); lc.className='vocab-col'; lc.id='vcol-left';
+  const rc = document.createElement('div'); rc.className='vocab-col'; rc.id='vcol-right';
+  words.forEach(w=>{
+    const c = document.createElement('div');
+    c.className='vocab-chip'; c.textContent=w; c.dataset.side='left'; c.dataset.word=w;
+    lc.appendChild(c);
+  });
+  defs.forEach(d=>{
+    const c = document.createElement('div');
+    c.className='vocab-chip'; c.textContent=d; c.dataset.side='right'; c.dataset.def=d;
+    rc.appendChild(c);
+  });
+  grid.appendChild(lc); grid.appendChild(rc);
+  grid.addEventListener('click',function(e){
+    const chip = e.target.closest('.vocab-chip');
+    if(!chip || chip.classList.contains('correct')) return;
+    vocabClick(chip);
+  });
+}
+function vocabClick(chip){
+  const side = chip.dataset.side;
+  const fb = document.getElementById('vocab-feedback');
+  document.querySelectorAll('.vocab-chip.selected').forEach(c=>{ if(c.dataset.side===side) c.classList.remove('selected'); });
+  chip.classList.add('selected');
+  vocabSelected[side] = chip;
+  if(vocabSelected.left && vocabSelected.right){
+    const w = vocabSelected.left.dataset.word;
+    const d = vocabSelected.right.dataset.def;
+    const match = vocabPairs.find(p=>p.word===w && p.def===d);
+    if(match){
+      vocabSelected.left.classList.remove('selected'); vocabSelected.left.classList.add('correct');
+      vocabSelected.right.classList.remove('selected'); vocabSelected.right.classList.add('correct');
+      vocabMatched.add(w);
+      addScore(10); screenScores.vocab += 10;
+      document.getElementById('vocab-matched').textContent = vocabMatched.size;
+      fb.className='vocab-feedback show ok'; fb.textContent='✅ 正确！「'+w+'」：'+d;
+      if(vocabMatched.size===vocabPairs.length) setTimeout(()=>showModal('🎉','词语全对！','你已经掌握了所有关键词语，太厉害了！'),500);
+    } else {
+      vocabSelected.left.classList.add('wrong'); vocabSelected.right.classList.add('wrong');
+      addScore(-3); screenScores.vocab = Math.max(0,screenScores.vocab-3);
+      fb.className='vocab-feedback show err'; fb.textContent='❌ 再想想！词语和意思不匹配哦。';
+      setTimeout(()=>{
+        if(vocabSelected.left) vocabSelected.left.classList.remove('wrong','selected');
+        if(vocabSelected.right) vocabSelected.right.classList.remove('wrong','selected');
+      },800);
+    }
+    vocabSelected={left:null,right:null};
+  }
+}
+
+// ===== SCREEN 3: MOUNTAIN =====
+function buildMountain(){
+  mountainAnswers={}; mountainChecked=false; mountainDoneScore=0;
+  const div = document.getElementById('mountain-stages');
+  div.innerHTML='';
+  mountainStages.forEach(st=>{
+    const row = document.createElement('div'); row.className='stage-row';
+    const dz = document.createElement('div');
+    dz.className='drop-zone'; dz.id='dz-'+st.id; dz.textContent='拖到这里';
+    dz.addEventListener('dragover',function(e){ e.preventDefault(); dz.classList.add('over'); });
+    dz.addEventListener('dragleave',function(){ dz.classList.remove('over'); });
+    dz.addEventListener('drop',function(e){
+      e.preventDefault(); dz.classList.remove('over');
+      const text = e.dataTransfer.getData('text/plain');
+      if(mountainAnswers[st.id]) {
+        const oldCard = mountainCardMap[mountainAnswers[st.id]];
+        if(oldCard) oldCard.classList.remove('used');
+      }
+      mountainAnswers[st.id]=text;
+      dz.textContent=text; dz.className='drop-zone filled';
+      const card = mountainCardMap[text];
+      if(card) card.classList.add('used');
+      mountainChecked=false;
+    });
+    row.innerHTML='<span style="font-size:1.5rem;flex-shrink:0">'+(st.label.split(' ')[0])+'</span><div style="flex:1"><div style="font-family:\'ZCOOL XiaoWei\',serif;font-weight:700;font-size:0.95rem">'+st.label+'</div><div style="font-size:0.75rem;color:var(--muted)">'+st.desc+'</div></div>';
+    row.appendChild(dz);
+    div.appendChild(row);
+  });
+  const bank = document.getElementById('drag-bank-mtn');
+  bank.innerHTML=''; mountainCardMap={};
+  [...mountainCards].sort(()=>Math.random()-0.5).forEach(text=>{
+    const card = document.createElement('div');
+    card.className='drag-card'; card.textContent=text; card.draggable=true;
+    card.addEventListener('dragstart',function(e){ e.dataTransfer.setData('text/plain',text); card.classList.add('dragging'); });
+    card.addEventListener('dragend',function(){ card.classList.remove('dragging'); });
+    bank.appendChild(card);
+    mountainCardMap[text]=card;
+  });
+}
+function checkMountain(){
+  if(mountainChecked) return;
+  let correct=0;
+  mountainStages.forEach(st=>{
+    const dz=document.getElementById('dz-'+st.id);
+    if(mountainAnswers[st.id]===st.answer){ dz.classList.add('correct'); dz.classList.remove('wrong','filled'); correct++; }
+    else if(mountainAnswers[st.id]){ dz.classList.add('wrong'); dz.classList.remove('correct','filled'); }
+  });
+  mountainChecked=true;
+  const pts=correct*15;
+  if(pts>mountainDoneScore){ addScore(pts-mountainDoneScore); screenScores.mountain+=pts-mountainDoneScore; mountainDoneScore=pts; }
+  if(correct===mountainStages.length) showModal('⛰️','故事山完成！','全部'+correct+'个位置都填对了！你对故事结构的理解非常好！');
+  else showModal('🤔','继续努力！',correct+'/'+mountainStages.length+' 个正确，红色的位置答错了，可以重置再试！');
+}
+function resetMountain(){
+  mountainAnswers={}; mountainChecked=false;
+  mountainStages.forEach(st=>{ const dz=document.getElementById('dz-'+st.id); dz.textContent='拖到这里'; dz.className='drop-zone'; });
+  Object.values(mountainCardMap).forEach(c=>c.classList.remove('used'));
+}
+
+// ===== SCREEN 4: SEQUENCE =====
+function shuffleArr(arr){ for(let i=arr.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];} return arr; }
+function buildSeq(){ seqOrder=seqData.map(s=>s.id); shuffleArr(seqOrder); renderSeq(); }
+function renderSeq(){
+  const container=document.getElementById('seq-cards'); container.innerHTML='';
+  seqOrder.forEach((id,pos)=>{
+    const item=seqData.find(s=>s.id===id);
+    const div=document.createElement('div'); div.className='seq-item'; div.draggable=true; div.dataset.pos=pos;
+    div.innerHTML='<span class="seq-handle">☰</span><span class="seq-num">'+(pos+1)+'</span><span class="seq-text">'+item.text+'</span><span class="seq-result" id="sr-'+id+'"></span>';
+    div.addEventListener('dragstart',function(e){ seqDragSrc=pos; div.classList.add('dragging'); e.dataTransfer.setData('text/plain',String(pos)); });
+    div.addEventListener('dragend',function(){ div.classList.remove('dragging'); });
+    div.addEventListener('dragover',function(e){ e.preventDefault(); });
+    div.addEventListener('drop',function(e){
+      e.preventDefault();
+      const src=seqDragSrc; const dst=pos;
+      if(src===dst) return;
+      const tmp=seqOrder[src]; seqOrder[src]=seqOrder[dst]; seqOrder[dst]=tmp;
+      renderSeq();
+    });
+    container.appendChild(div);
+  });
+}
+function checkSeq(){
+  let correct=0;
+  seqOrder.forEach((id,pos)=>{ const sr=document.getElementById('sr-'+id); if(id===pos+1){sr.textContent='✅';correct++;}else sr.textContent='❌'; });
+  if(correct===seqData.length){
+    if(seqDoneScore===0){ addScore(20); screenScores.seq=20; seqDoneScore=20; }
+    setTimeout(()=>showModal('🎊','排序完全正确！','太棒了！你把7个情节全部排对了！'),300);
+  } else {
+    showToast('还有'+(seqData.length-correct)+'个位置不对，再调整一下！');
+  }
+}
+
+// ===== SCREEN 5: QUIZ =====
+function buildQuiz(){ quizIdx=0; renderQuiz(); }
+function renderQuiz(){
+  const container=document.getElementById('quiz-container');
+  if(quizIdx>=quizData.length){
+    container.innerHTML='<div style="text-align:center;padding:2rem;font-size:1.05rem;color:var(--green)">🎉 所有题目完成！</div>';
+    document.getElementById('quiz-nav').style.display='flex';
+    document.getElementById('quiz-bar-inner').style.width='100%';
+    return;
+  }
+  const q=quizData[quizIdx];
+  document.getElementById('quiz-bar-inner').style.width=(quizIdx/quizData.length*100)+'%';
+  const card=document.createElement('div'); card.className='card';
+  card.innerHTML='<div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.3rem">第 '+(quizIdx+1)+' / '+quizData.length+' 题</div><div class="quiz-q">'+q.q+'</div><div class="quiz-options" id="qopts"></div><div class="quiz-explain" id="q-explain"></div>';
+  container.innerHTML=''; container.appendChild(card);
+  const opts=document.getElementById('qopts');
+  q.opts.forEach((opt,i)=>{
+    const btn=document.createElement('button'); btn.className='quiz-opt'; btn.textContent=opt;
+    btn.addEventListener('click',function(){
+      if(btn.classList.contains('disabled')) return;
+      document.querySelectorAll('.quiz-opt').forEach(b=>b.classList.add('disabled'));
+      const explain=document.getElementById('q-explain');
+      if(i===q.ans){ btn.classList.add('correct'); addScore(10); screenScores.quiz+=10; explain.className='quiz-explain show ok'; explain.innerHTML='✅ '+q.explain; showToast('🎉 答对了！+10分'); }
+      else { btn.classList.add('wrong'); document.querySelectorAll('.quiz-opt')[q.ans].classList.add('correct'); explain.className='quiz-explain show err'; explain.innerHTML='❌ '+q.explain; }
+      setTimeout(()=>{ quizIdx++; renderQuiz(); },1800);
+    });
+    opts.appendChild(btn);
+  });
+}
+
+// ===== SCREEN 6: FINAL =====
+function buildFinal(){
+  document.getElementById('final-score-num').textContent=score;
+  let stars=''; let medal='🏅';
+  if(score>=180){stars='⭐⭐⭐⭐⭐';medal='🥇';}
+  else if(score>=130){stars='⭐⭐⭐⭐';medal='🥈';}
+  else if(score>=80){stars='⭐⭐⭐';medal='🥉';}
+  else if(score>=40){stars='⭐⭐';medal='🏅';}
+  else{stars='⭐';medal='📚';}
+  document.getElementById('final-stars').textContent=stars;
+  document.getElementById('final-medal').textContent=medal;
+  document.getElementById('result-breakdown').innerHTML=
+    '<div style="font-family:\'ZCOOL XiaoWei\',serif;font-size:1rem;margin-bottom:0.7rem;color:var(--amber)">📊 各部分得分</div>'+
+    '<div class="result-row"><span>📖 课文探索</span><span class="result-pts">'+screenScores.story+' 分</span></div>'+
+    '<div class="result-row"><span>🔤 词语配对</span><span class="result-pts">'+screenScores.vocab+' 分</span></div>'+
+    '<div class="result-row"><span>⛰️ 故事山</span><span class="result-pts">'+screenScores.mountain+' 分</span></div>'+
+    '<div class="result-row"><span>🔀 情节排序</span><span class="result-pts">'+screenScores.seq+' 分</span></div>'+
+    '<div class="result-row"><span>❓ 理解问答</span><span class="result-pts">'+screenScores.quiz+' 分</span></div>'+
+    '<div class="result-row" style="border-bottom:none;font-weight:700"><span>🏆 总分</span><span class="result-pts">'+score+' 分</span></div>';
+}
+function restartAll(){
+  score=0; screenScores={story:0,vocab:0,mountain:0,seq:0,quiz:0};
+  vocabLearned.clear(); seqDoneScore=0; mountainDoneScore=0;
+  document.getElementById('score-val').textContent=0;
+  buildVocab(); buildMountain(); buildSeq(); buildQuiz();
+  goScreen(0);
+}
+
+// ===== EVENT LISTENERS =====
+function initAll(){
+  buildStory(); buildVocab(); buildMountain(); buildSeq(); buildQuiz();
+
+  // Progress nav
+  document.querySelectorAll('.prog-step').forEach(function(el){
+    el.addEventListener('click',function(){ goScreen(parseInt(el.dataset.screen)); });
+  });
+
+  // data-go buttons
+  document.addEventListener('click',function(e){
+    const btn = e.target.closest('[data-go]');
+    if(btn) goScreen(parseInt(btn.dataset.go));
+  });
+
+  // specific buttons
+  document.getElementById('btn-start').addEventListener('click',function(){ goScreen(1); });
+  document.getElementById('btn-check-mtn').addEventListener('click', checkMountain);
+  document.getElementById('btn-reset-mtn').addEventListener('click', resetMountain);
+  document.getElementById('btn-check-seq').addEventListener('click', checkSeq);
+  document.getElementById('btn-shuffle-seq').addEventListener('click',function(){ shuffleArr(seqOrder); renderSeq(); });
+  document.getElementById('btn-restart').addEventListener('click', restartAll);
+  document.getElementById('modal-ok-btn').addEventListener('click', closeModal);
+  document.getElementById('tt-close').addEventListener('click',function(){ document.getElementById('tooltip-box').classList.remove('show'); });
+}
+
+// Safe init: works whether DOMContentLoaded already fired or not
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', initAll);
+} else {
+  initAll();
+}
+</script>
+</body>
+</html>
