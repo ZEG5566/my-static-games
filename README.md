@@ -22,4 +22,4 @@
 
 ## 設計原則
 
-所有遊戲設計參考 `secondbrain/教学素材/网页游戏设计/游戏化学习网页设计checklist.md`
+所有遊戲設計參考 `secondbrain/素材库/网页游戏设计/游戏化学习网页设计checklist.md`

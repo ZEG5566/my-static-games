@@ -12,7 +12,7 @@
 - 🌐 部署：https://zeg5566.github.io/my-static-games/（GitHub Pages）
 
 ## 設計原則
-新做遊戲前先讀：`secondbrain/教学素材/网页游戏设计/游戏化学习网页设计checklist.md`（跨項目共享方法論）
+新做遊戲前先讀：`secondbrain/素材库/网页游戏设计/游戏化学习网页设计checklist.md`（跨項目共享方法論）
 
 ## 工作注意事項
 - 所有遊戲必須是**單檔 HTML**（含 inline CSS/JS），可離線打開、能 file:// 跑
