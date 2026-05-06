@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 460" role="img" aria-label="花瓶战士">
+  <defs>
+    <radialGradient id="bodyGrad" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#2A4FA8"/>
+      <stop offset="60%" stop-color="#0F2A6E"/>
+      <stop offset="100%" stop-color="#061540"/>
+    </radialGradient>
+    <linearGradient id="goldGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FFE873"/>
+      <stop offset="50%" stop-color="#FFD700"/>
+      <stop offset="100%" stop-color="#B98800"/>
+    </linearGradient>
+    <linearGradient id="cyanGlow" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#7DE7FF"/>
+      <stop offset="100%" stop-color="#0096C8"/>
+    </linearGradient>
+    <radialGradient id="aura" cx="50%" cy="55%" r="55%">
+      <stop offset="0%" stop-color="rgba(0,194,255,.55)"/>
+      <stop offset="60%" stop-color="rgba(0,194,255,.18)"/>
+      <stop offset="100%" stop-color="rgba(0,194,255,0)"/>
+    </radialGradient>
+    <filter id="goldGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="2.5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="cyanGlow2" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Aura -->
+  <ellipse cx="180" cy="240" rx="170" ry="190" fill="url(#aura)"/>
+
+  <!-- Lightning behind -->
+  <g opacity=".75" filter="url(#cyanGlow2)" stroke="#7DE7FF" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M40 90 L70 130 L60 140 L95 200"/>
+    <path d="M320 90 L290 130 L300 140 L265 200"/>
+    <path d="M30 320 L60 290"/>
+    <path d="M330 320 L300 290"/>
+  </g>
+
+  <!-- Pedestal -->
+  <ellipse cx="180" cy="430" rx="120" ry="20" fill="#06122d" opacity=".75"/>
+  <path d="M70 415 L290 415 L270 440 L90 440 Z" fill="url(#goldGrad)" stroke="#7a5a00" stroke-width="2"/>
+
+  <!-- Legs (gold boots) -->
+  <g fill="url(#goldGrad)" stroke="#7a5a00" stroke-width="2.5" stroke-linejoin="round">
+    <path d="M135 380 L135 415 L170 415 L170 380 Z"/>
+    <path d="M190 380 L190 415 L225 415 L225 380 Z"/>
+  </g>
+
+  <!-- Body — vase shape -->
+  <g>
+    <!-- vase silhouette -->
+    <path d="M125 130
+             C 125 100, 145 90, 180 90
+             C 215 90, 235 100, 235 130
+             L 220 165
+             C 270 200, 280 270, 240 360
+             L 120 360
+             C 80 270, 90 200, 140 165
+             Z"
+          fill="url(#bodyGrad)" stroke="#001028" stroke-width="3"/>
+
+    <!-- Vase neck rim -->
+    <ellipse cx="180" cy="92" rx="55" ry="9" fill="#152F73" stroke="#001028" stroke-width="2.5"/>
+    <ellipse cx="180" cy="92" rx="42" ry="5" fill="#06133a"/>
+
+    <!-- Gold kintsugi cracks -->
+    <g stroke="url(#goldGrad)" stroke-width="4.5" fill="none" stroke-linecap="round" stroke-linejoin="round" filter="url(#goldGlow)">
+      <path d="M150 130 L160 175 L140 220 L165 270 L150 330"/>
+      <path d="M210 130 L195 180 L220 230 L200 280 L215 340"/>
+      <path d="M180 220 L190 240 L175 260 L185 290"/>
+      <path d="M155 100 L170 115"/>
+      <path d="M205 100 L195 115"/>
+    </g>
+
+    <!-- Chest emblem (lightning star) -->
+    <circle cx="180" cy="240" r="32" fill="#0a1f55" stroke="url(#goldGrad)" stroke-width="3"/>
+    <path d="M178 220 L168 248 L182 248 L172 268 L195 240 L181 240 Z" fill="#FFD93D" filter="url(#goldGlow)"/>
+  </g>
+
+  <!-- Mask / face — fierce eyes -->
+  <g>
+    <rect x="138" y="115" width="84" height="38" rx="6" fill="#001028"/>
+    <!-- eyes -->
+    <path d="M148 134 L168 128 L168 142 Z" fill="#FFD93D" filter="url(#goldGlow)"/>
+    <path d="M212 134 L192 128 L192 142 Z" fill="#FFD93D" filter="url(#goldGlow)"/>
+    <!-- mouth -->
+    <path d="M165 150 Q 180 158 195 150" stroke="#FFD93D" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  </g>
+
+  <!-- Arms / fists -->
+  <g>
+    <!-- left arm -->
+    <path d="M120 220 C 90 240, 80 280, 95 320" stroke="#0a1f55" stroke-width="22" fill="none" stroke-linecap="round"/>
+    <path d="M120 220 C 90 240, 80 280, 95 320" stroke="url(#goldGrad)" stroke-width="3" fill="none" stroke-linecap="round" opacity=".8"/>
+    <!-- left fist (gold gauntlet) -->
+    <circle cx="92" cy="328" r="26" fill="url(#goldGrad)" stroke="#7a5a00" stroke-width="2.5"/>
+    <path d="M82 320 h22 M82 332 h22" stroke="#7a5a00" stroke-width="2"/>
+
+    <!-- right arm -->
+    <path d="M240 220 C 270 240, 280 280, 265 320" stroke="#0a1f55" stroke-width="22" fill="none" stroke-linecap="round"/>
+    <path d="M240 220 C 270 240, 280 280, 265 320" stroke="url(#goldGrad)" stroke-width="3" fill="none" stroke-linecap="round" opacity=".8"/>
+    <circle cx="268" cy="328" r="26" fill="url(#goldGrad)" stroke="#7a5a00" stroke-width="2.5"/>
+    <path d="M258 320 h22 M258 332 h22" stroke="#7a5a00" stroke-width="2"/>
+  </g>
+</svg>

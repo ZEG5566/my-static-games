@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 460" role="img" aria-label="迷雾魔王">
+  <defs>
+    <radialGradient id="mistBody" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#9DD9FF"/>
+      <stop offset="60%" stop-color="#3A6FA8"/>
+      <stop offset="100%" stop-color="#0F2A55"/>
+    </radialGradient>
+    <radialGradient id="mistAura" cx="50%" cy="55%" r="55%">
+      <stop offset="0%" stop-color="rgba(157,217,255,.55)"/>
+      <stop offset="60%" stop-color="rgba(80,140,200,.18)"/>
+      <stop offset="100%" stop-color="rgba(80,140,200,0)"/>
+    </radialGradient>
+    <filter id="mistGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3"/>
+    </filter>
+  </defs>
+
+  <ellipse cx="180" cy="240" rx="170" ry="190" fill="url(#mistAura)"/>
+
+  <!-- mist clouds -->
+  <g fill="#7BB6E5" opacity=".65" filter="url(#mistGlow)">
+    <ellipse cx="80" cy="240" rx="50" ry="30"/>
+    <ellipse cx="280" cy="220" rx="55" ry="32"/>
+    <ellipse cx="180" cy="400" rx="120" ry="22"/>
+  </g>
+
+  <!-- body — fog wisp shape -->
+  <path d="M120 130
+           C 100 130, 90 200, 110 240
+           C 80 290, 90 360, 130 400
+           L 230 400
+           C 270 360, 280 290, 250 240
+           C 270 200, 260 130, 240 130
+           C 220 110, 140 110, 120 130 Z"
+        fill="url(#mistBody)" stroke="#0c1d3d" stroke-width="3"/>
+
+  <!-- hood opening -->
+  <path d="M125 170 C 125 140, 235 140, 235 170 L 220 200 L 140 200 Z" fill="#0a1530" stroke="#0c1d3d" stroke-width="2.5"/>
+
+  <!-- glowing eyes -->
+  <circle cx="155" cy="180" r="6" fill="#9DD9FF" filter="url(#mistGlow)"/>
+  <circle cx="205" cy="180" r="6" fill="#9DD9FF" filter="url(#mistGlow)"/>
+  <circle cx="155" cy="180" r="3" fill="#FFFFFF"/>
+  <circle cx="205" cy="180" r="3" fill="#FFFFFF"/>
+
+  <!-- mouth -->
+  <path d="M155 220 Q 180 240 205 220" fill="none" stroke="#7BB6E5" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- arms (wispy) -->
+  <g stroke="#0c1d3d" stroke-width="3" fill="#3A6FA8">
+    <path d="M110 240 C 70 270, 60 320, 80 360 L 110 350 C 100 320, 105 290, 125 270 Z"/>
+    <path d="M250 240 C 290 270, 300 320, 280 360 L 250 350 C 260 320, 255 290, 235 270 Z"/>
+  </g>
+
+  <!-- chest gem (fog crystal) -->
+  <path d="M180 290 L160 310 L180 350 L200 310 Z" fill="#9DD9FF" stroke="#0c1d3d" stroke-width="2" opacity=".85" filter="url(#mistGlow)"/>
+  <path d="M180 295 L168 312 L180 340 L192 312 Z" fill="#FFFFFF"/>
+</svg>

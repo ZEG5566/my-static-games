@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1280, initial-scale=1, maximum-scale=2">
+  <title>第二座山·迷雾魔王 ｜ 巅峰挑战</title>
+  <link rel="stylesheet" href="../assets/css/theme.css">
+  <link rel="stylesheet" href="../assets/css/level.css">
+</head>
+<body class="has-toolbar no-select">
+  <div class="bg-stage" aria-hidden="true"></div>
+
+  <main id="level">
+    <header class="lv-top">
+      <div class="lv-rank" data-rank="silver" id="lv-rank">
+        <div class="hex"></div>
+        <div class="meta">
+          <span class="name">青铜勇者</span>
+          <span class="role">挑战者</span>
+        </div>
+      </div>
+      <div class="lv-title">
+        <div class="name"><span class="small">第二座山</span>迷雾魔王 · 破译短语真意</div>
+        <div class="lv-steps" id="lv-steps">
+          <div class="step-dot" data-state="current">1</div>
+          <div class="step-line"></div>
+          <div class="step-dot">2</div>
+          <div class="step-line"></div>
+          <div class="step-dot">3</div>
+        </div>
+      </div>
+      <div class="lv-actions">
+        <button class="act-btn" title="设置" type="button"><svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M19.4 13a7.7 7.7 0 000-2l2.1-1.6-2-3.4-2.4 1a7.7 7.7 0 00-1.7-1L15 3h-4l-.4 2a7.7 7.7 0 00-1.7 1l-2.4-1-2 3.4L6.6 11a7.7 7.7 0 000 2l-2.1 1.6 2 3.4 2.4-1a7.7 7.7 0 001.7 1l.4 2h4l.4-2a7.7 7.7 0 001.7-1l2.4 1 2-3.4L19.4 13zM12 15.5a3.5 3.5 0 110-7 3.5 3.5 0 010 7z"/></svg></button>
+      </div>
+    </header>
+
+    <div class="lv-step-hint">
+      <span class="num">第 1 步</span>
+      <span class="text">把原文线索拖到下面三个槽：是谁 / 发生了什么事 / 真实情绪。</span>
+    </div>
+
+    <section class="lv-arena">
+      <div class="fighter is-hero">
+        <div class="name-row">
+          <svg class="heart" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0112 6a5.5 5.5 0 019.5 6c-2.5 4.5-9.5 9-9.5 9z"/></svg>
+          <span class="name">花瓶战士</span>
+          <span class="hpnum">100/100</span>
+        </div>
+        <div class="hpbar"><div class="fill" style="width:100%"></div></div>
+        <div class="portrait"><img src="../assets/img/hero.svg" alt="花瓶战士"></div>
+      </div>
+
+      <div class="lv-center" id="lv-center"></div>
+
+      <div class="fighter is-boss">
+        <div class="name-row">
+          <svg class="heart" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0112 6a5.5 5.5 0 019.5 6c-2.5 4.5-9.5 9-9.5 9z"/></svg>
+          <span class="name">迷雾魔王</span>
+          <span class="hpnum">110/110</span>
+        </div>
+        <div class="hpbar is-enemy"><div class="fill" style="width:100%"></div></div>
+        <div class="portrait"><img src="../assets/img/boss-mist.svg" alt="迷雾魔王"></div>
+      </div>
+    </section>
+
+    <footer class="lv-bottom">
+      <div class="lv-progress">
+        <span class="star">⭐</span>
+        <span class="lab">第二座山 · 迷雾魔王</span>
+        <div class="bar"><span></span></div>
+      </div>
+      <button class="lv-hint-btn" type="button" id="lv-hint">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7 7 0 00-4 12.8V17a2 2 0 002 2h4a2 2 0 002-2v-2.2A7 7 0 0012 2zm-2 19h4v1a1 1 0 01-1 1h-2a1 1 0 01-1-1v-1z"/></svg>
+        提示
+      </button>
+    </footer>
+  </main>
+
+  <script src="../assets/js/state.js"></script>
+  <script src="../assets/js/audio.js"></script>
+  <script src="../assets/js/toolbar.js"></script>
+  <script src="../assets/js/content.js"></script>
+  <script src="../assets/js/victory.js"></script>
+  <script src="../assets/js/level2.js"></script>
+  <script>
+    TeacherToolbar.mount({
+      homeHref: '../index.html',
+      onReplay: () => location.reload(),
+      onAnswer: () => LV2.showStandardAnswer(),
+    });
+
+    const s = GameState.get();
+    const cleared = ['l1','l2','l3'].filter(k => s.cleared[k]).length;
+    const r = document.getElementById('lv-rank');
+    if (cleared >= 3) { r.dataset.rank = 'gold'; r.querySelector('.name').textContent = '黄金王者'; }
+    else if (cleared >= 2) { r.dataset.rank = 'silver'; r.querySelector('.name').textContent = '白银智者'; }
+    else if (cleared >= 1) { r.dataset.rank = 'bronze'; r.querySelector('.name').textContent = '青铜勇者'; }
+    else { r.dataset.rank = 'bronze'; r.querySelector('.name').textContent = '挑战者'; r.querySelector('.role').textContent = '尚未上榜'; }
+
+    const HINTS = {
+      1: '⚠️ 三要素：是谁（一定是"我"）+ 发生了什么事（看原文上下句） + 真实情绪。',
+      2: '⚠️ 选词时要选"真实情绪/状态"——不是字面意思，而是当事人此刻的内心。',
+      3: '⚠️ 三要素全部填入空格，模板就是满分答案。可以加一两个连接词让句子更通顺。',
+    };
+    document.getElementById('lv-hint').addEventListener('click', () => {
+      SFX.select();
+      const num = +document.querySelector('.lv-step-hint .num').textContent.replace(/\D/g, '') || 1;
+      Victory.showAnswer({ html: `<p style="font-size:24px;line-height:1.6;">${HINTS[num] || HINTS[1]}</p>` });
+    });
+
+    LV2.renderStep1();
+  </script>
+</body>
+</html>

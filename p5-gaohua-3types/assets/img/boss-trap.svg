@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 460" role="img" aria-label="陷阱魔王">
+  <defs>
+    <radialGradient id="bossBody" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#A668FF"/>
+      <stop offset="60%" stop-color="#5A1FB8"/>
+      <stop offset="100%" stop-color="#250A60"/>
+    </radialGradient>
+    <radialGradient id="bossAura" cx="50%" cy="55%" r="55%">
+      <stop offset="0%" stop-color="rgba(167,103,255,.55)"/>
+      <stop offset="60%" stop-color="rgba(123,63,242,.18)"/>
+      <stop offset="100%" stop-color="rgba(123,63,242,0)"/>
+    </radialGradient>
+    <linearGradient id="bossMask" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#E0DCEF"/>
+      <stop offset="100%" stop-color="#9890C0"/>
+    </linearGradient>
+    <filter id="purpleGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="3" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <ellipse cx="180" cy="240" rx="170" ry="190" fill="url(#bossAura)"/>
+
+  <!-- pedestal -->
+  <ellipse cx="180" cy="430" rx="115" ry="18" fill="#1a0a3a" opacity=".75"/>
+
+  <!-- cape (jagged) -->
+  <path d="M90 200 L60 350 L80 360 L100 320 L120 360 L140 330 L160 380 L200 380 L220 330 L240 360 L260 320 L280 360 L300 350 L270 200 Z"
+        fill="#3D1480" stroke="#1a0a3a" stroke-width="3" stroke-linejoin="round"/>
+
+  <!-- body (rounded gremlin) -->
+  <path d="M120 200 C 110 130, 250 130, 240 200 C 280 240, 280 350, 240 400 L 120 400 C 80 350, 80 240, 120 200 Z"
+        fill="url(#bossBody)" stroke="#1a0a3a" stroke-width="3"/>
+
+  <!-- horns -->
+  <path d="M128 130 L140 95 L150 130 Z" fill="#3D1480" stroke="#1a0a3a" stroke-width="2"/>
+  <path d="M232 130 L220 95 L210 130 Z" fill="#3D1480" stroke="#1a0a3a" stroke-width="2"/>
+
+  <!-- mask (white half) -->
+  <path d="M130 165 C 130 145, 160 140, 180 145 L 180 215 C 165 220, 130 215, 130 195 Z"
+        fill="url(#bossMask)" stroke="#1a0a3a" stroke-width="2.5"/>
+
+  <!-- eyes -->
+  <ellipse cx="155" cy="180" rx="9" ry="11" fill="#FFFFFF"/>
+  <ellipse cx="155" cy="183" rx="5" ry="6" fill="#3D1480"/>
+  <ellipse cx="200" cy="180" rx="9" ry="11" fill="#FFFFFF"/>
+  <ellipse cx="200" cy="183" rx="5" ry="6" fill="#3D1480"/>
+  <!-- glow eyes -->
+  <circle cx="155" cy="183" r="3" fill="#A668FF" filter="url(#purpleGlow)"/>
+  <circle cx="200" cy="183" r="3" fill="#A668FF" filter="url(#purpleGlow)"/>
+
+  <!-- evil grin -->
+  <path d="M150 220 Q 180 245 215 220 L 210 230 L 195 225 L 180 232 L 165 225 L 152 230 Z"
+        fill="#FFFFFF" stroke="#1a0a3a" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M165 222 L 165 230 M 180 226 L 180 234 M 195 222 L 195 230" stroke="#1a0a3a" stroke-width="1.5"/>
+
+  <!-- chest gem -->
+  <path d="M180 290 L165 310 L180 340 L195 310 Z" fill="#A668FF" stroke="#1a0a3a" stroke-width="2.5" filter="url(#purpleGlow)"/>
+
+  <!-- arms -->
+  <g stroke="#1a0a3a" stroke-width="3" fill="#5A1FB8" stroke-linejoin="round">
+    <path d="M115 250 C 80 280, 75 330, 95 360 L 120 350 C 110 320, 115 290, 130 270 Z"/>
+    <path d="M245 250 C 280 280, 285 330, 265 360 L 240 350 C 250 320, 245 290, 230 270 Z"/>
+  </g>
+</svg>

@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1280, initial-scale=1, maximum-scale=2">
+  <title>第一座山·陷阱魔王 ｜ 巅峰挑战</title>
+  <link rel="stylesheet" href="../assets/css/theme.css">
+  <link rel="stylesheet" href="../assets/css/level.css">
+</head>
+<body class="has-toolbar no-select">
+  <div class="bg-stage" aria-hidden="true"></div>
+
+  <main id="level">
+
+    <!-- 顶部状态条 -->
+    <header class="lv-top">
+      <div class="lv-rank" data-rank="bronze" id="lv-rank">
+        <div class="hex"></div>
+        <div class="meta">
+          <span class="name">青铜勇者</span>
+          <span class="role">挑战者</span>
+        </div>
+      </div>
+      <div class="lv-title">
+        <div class="name"><span class="small">第一座山</span>陷阱魔王 · 识破伪标题</div>
+        <div class="lv-steps" id="lv-steps">
+          <div class="step-dot" data-state="current">1</div>
+          <div class="step-line"></div>
+          <div class="step-dot">2</div>
+          <div class="step-line"></div>
+          <div class="step-dot">3</div>
+          <div class="step-line"></div>
+          <div class="step-dot">4</div>
+        </div>
+      </div>
+      <div class="lv-actions">
+        <button class="act-btn" title="设置" type="button" id="lv-settings">
+          <svg viewBox="0 0 24 24" width="28" height="28" fill="currentColor"><path d="M19.4 13a7.7 7.7 0 000-2l2.1-1.6-2-3.4-2.4 1a7.7 7.7 0 00-1.7-1L15 3h-4l-.4 2a7.7 7.7 0 00-1.7 1l-2.4-1-2 3.4L6.6 11a7.7 7.7 0 000 2l-2.1 1.6 2 3.4 2.4-1a7.7 7.7 0 001.7 1l.4 2h4l.4-2a7.7 7.7 0 001.7-1l2.4 1 2-3.4L19.4 13zM12 15.5a3.5 3.5 0 110-7 3.5 3.5 0 010 7z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- 步骤说明条 -->
+    <div class="lv-step-hint">
+      <span class="num">第 1 步</span>
+      <span class="text">翻开两张牌 — 哪一张才是文章真正的主旨？</span>
+    </div>
+
+    <!-- 战斗主体 -->
+    <section class="lv-arena">
+      <!-- 英雄（左） -->
+      <div class="fighter is-hero">
+        <div class="name-row">
+          <svg class="heart" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0112 6a5.5 5.5 0 019.5 6c-2.5 4.5-9.5 9-9.5 9z"/></svg>
+          <span class="name">花瓶战士</span>
+          <span class="hpnum">100/100</span>
+        </div>
+        <div class="hpbar"><div class="fill" style="width:100%"></div></div>
+        <div class="portrait"><img src="../assets/img/hero.svg" alt="花瓶战士"></div>
+      </div>
+
+      <!-- 中央关卡舞台 -->
+      <div class="lv-center" id="lv-center">
+        <!-- 子步骤渲染区 -->
+      </div>
+
+      <!-- 反派（右） -->
+      <div class="fighter is-boss">
+        <div class="name-row">
+          <svg class="heart" viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.5-9.5-9A5.5 5.5 0 0112 6a5.5 5.5 0 019.5 6c-2.5 4.5-9.5 9-9.5 9z"/></svg>
+          <span class="name">陷阱魔王</span>
+          <span class="hpnum">120/120</span>
+        </div>
+        <div class="hpbar is-enemy"><div class="fill" style="width:100%"></div></div>
+        <div class="portrait"><img src="../assets/img/boss-trap.svg" alt="陷阱魔王"></div>
+      </div>
+    </section>
+
+    <!-- 底部进度 + HINT -->
+    <footer class="lv-bottom">
+      <div class="lv-progress">
+        <span class="star">⭐</span>
+        <span class="lab">第一座山 · 陷阱魔王</span>
+        <div class="bar"><span></span></div>
+      </div>
+      <button class="lv-hint-btn" type="button" id="lv-hint">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2a7 7 0 00-4 12.8V17a2 2 0 002 2h4a2 2 0 002-2v-2.2A7 7 0 0012 2zm-2 19h4v1a1 1 0 01-1 1h-2a1 1 0 01-1-1v-1z"/></svg>
+        提示
+      </button>
+    </footer>
+
+  </main>
+
+  <script src="../assets/js/state.js"></script>
+  <script src="../assets/js/audio.js"></script>
+  <script src="../assets/js/toolbar.js"></script>
+  <script src="../assets/js/content.js"></script>
+  <script src="../assets/js/victory.js"></script>
+  <script src="../assets/js/level1.js"></script>
+  <script>
+    TeacherToolbar.mount({
+      homeHref: '../index.html',
+      onReplay: () => location.reload(),
+      onAnswer: () => LV1.showStandardAnswer(),
+    });
+
+    // —— 同步段位徽章 ——
+    const s = GameState.get();
+    const cleared = ['l1','l2','l3'].filter(k => s.cleared[k]).length;
+    const r = document.getElementById('lv-rank');
+    if (cleared >= 3) { r.dataset.rank = 'gold'; r.querySelector('.name').textContent = '黄金王者'; }
+    else if (cleared >= 2) { r.dataset.rank = 'silver'; r.querySelector('.name').textContent = '白银智者'; }
+    else if (cleared >= 1) { r.dataset.rank = 'bronze'; r.querySelector('.name').textContent = '青铜勇者'; }
+    else { r.dataset.rank = 'bronze'; r.querySelector('.name').textContent = '挑战者'; r.querySelector('.role').textContent = '尚未上榜'; }
+
+    // —— 提示按钮：当前步骤的简短提示 ——
+    const HINTS = {
+      1: '⚠️ 表面物品 vs 深层主旨 — 花瓶是物品，"诚实"才是文章想告诉你的道理。',
+      2: '⚠️ 留下「打碎花瓶 / 撒谎隐瞒 / 坦白被原谅」三段，其余可省略。',
+      3: '⚠️ 文章最后妈妈说"诚实比花瓶更可贵" — 答案就藏在那句话里。',
+      4: '⚠️ 每个空格都从前面三步的产出物自动填入，齐声朗读完整答案即可。',
+    };
+    document.getElementById('lv-hint').addEventListener('click', () => {
+      SFX.select();
+      const num = +document.querySelector('.lv-step-hint .num').textContent.replace(/\D/g, '') || 1;
+      Victory.showAnswer({ html: `<p style="font-size:24px;line-height:1.6;">${HINTS[num] || HINTS[1]}</p>` });
+    });
+
+    // 启动第一步
+    LV1.renderStep1();
+  </script>
+</body>
+</html>

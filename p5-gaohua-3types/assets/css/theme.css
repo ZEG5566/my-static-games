@@ -1,0 +1,272 @@
+/* ============================================================
+   巅峰挑战 · 主题变量与基线 (v2 BOSS 闯关风)
+   ============================================================ */
+
+:root {
+  /* —— 主题色板（决策定稿，不可改） —— */
+  --c-bg-deep:        #0D1B3D; /* 深空蓝 / 主背景 */
+  --c-bg-deep-2:      #0A1530; /* 更深一档（渐变下端） */
+  --c-bg-deep-3:      #142a5c; /* 比主背景亮一档（卡片底） */
+  --c-cyan:           #00C2FF; /* 电光青 / 主交互高光 */
+  --c-cyan-soft:      #4DD8FF; /* 电光青柔和版 */
+  --c-yellow:         #FFD93D; /* 闪电黄 / 强调 */
+  --c-orange:         #FF6A3D; /* 警戒橙 / CTA */
+  --c-orange-deep:    #E0511F;
+  --c-gold:           #FFD700; /* 金缮金 */
+  --c-gold-deep:      #C49B14;
+  --c-purple:         #7B3FF2; /* 反派紫 */
+  --c-purple-deep:    #5A1FB8;
+  --c-text:           #FFFFFF;
+  --c-text-soft:      #B8C4DD;
+  --c-text-dim:       #6F7DA0;
+  --c-danger:         #FF3D6E; /* 仅作魔王 HP 条等装饰红 */
+
+  /* —— 边光 / 描边 —— */
+  --line-cyan:        0 0 0 2px var(--c-cyan), 0 0 18px rgba(0, 194, 255, .55);
+  --line-gold:        0 0 0 2px var(--c-gold), 0 0 24px rgba(255, 215, 0, .65);
+  --line-purple:      0 0 0 2px var(--c-purple), 0 0 18px rgba(123, 63, 242, .55);
+  --line-dim:         0 0 0 2px rgba(184, 196, 221, .3);
+
+  /* —— 字号（≥ 36px 基线，关键文案再放大） —— */
+  --fs-base:          36px;  /* 正文基线 */
+  --fs-sm:            28px;  /* 提示 / 次要 */
+  --fs-md:            42px;  /* 中等标题 */
+  --fs-lg:            56px;  /* 大标题 */
+  --fs-xl:            72px;  /* 关卡 / 站名 */
+  --fs-xxl:           96px;  /* 通关大字 */
+  --fs-tactical:      48px;  /* HP / 数字 */
+
+  /* —— 字体栈 —— */
+  --ff-zh:        'PingFang SC', 'Microsoft YaHei', 'Source Han Sans SC',
+                  'Noto Sans CJK SC', 'Hiragino Sans GB', sans-serif;
+  --ff-tactical:  'Tactical', 'Bebas Neue', 'Orbitron', 'Impact',
+                  'PingFang SC', sans-serif;
+
+  /* —— 圆角 —— */
+  --r-sm: 8px;
+  --r-md: 14px;
+  --r-lg: 22px;
+  --r-pill: 999px;
+
+  /* —— 动效预算（任何单次动画 ≤ 600ms） —— */
+  --t-fast:   120ms;
+  --t-mid:    280ms;
+  --t-slow:   600ms;
+  --ease:     cubic-bezier(.22, 1, .36, 1);
+
+  /* —— 阴影 —— */
+  --sh-card:  0 12px 30px rgba(0, 0, 0, .55), inset 0 1px 0 rgba(255,255,255,.08);
+  --sh-inset: inset 0 0 28px rgba(0, 194, 255, .25);
+}
+
+/* —— 可选本地战术字体（如未投放 woff2 自动回退到系统） —— */
+@font-face {
+  font-family: 'Tactical';
+  src: local('Bebas Neue'),
+       local('Impact'),
+       url('../fonts/tactical.woff2') format('woff2');
+  font-display: swap;
+  font-weight: 700;
+}
+
+/* ============================================================
+   全局基线
+   ============================================================ */
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--c-bg-deep);
+  color: var(--c-text);
+  font-family: var(--ff-zh);
+  font-size: var(--fs-base);
+  line-height: 1.35;
+  letter-spacing: .02em;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  overflow-x: hidden;
+}
+
+img { display: block; max-width: 100%; }
+button { font-family: inherit; cursor: pointer; }
+button:focus-visible { outline: 2px solid var(--c-cyan); outline-offset: 3px; }
+
+/* —— 投影场景背景（深空 + 网格能量地板） —— */
+.bg-stage {
+  position: fixed; inset: 0;
+  z-index: -1;
+  background:
+    radial-gradient(ellipse at 50% 30%, #1b3a78 0%, var(--c-bg-deep) 55%, var(--c-bg-deep-2) 100%);
+}
+.bg-stage::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    linear-gradient(transparent 0 96%, rgba(0, 194, 255, .12) 96% 100%) 0 0/60px 60px,
+    linear-gradient(90deg, transparent 0 96%, rgba(0, 194, 255, .12) 96% 100%) 0 0/60px 60px;
+  mask: linear-gradient(180deg, transparent 0%, #000 65%, #000 100%);
+  opacity: .55;
+}
+
+/* 顶部 / 底部柔边（拉电竞氛围） */
+.bg-stage::after {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 0% 100%, rgba(0,194,255,.20), transparent 50%),
+    radial-gradient(ellipse at 100% 0%,  rgba(123,63,242,.20), transparent 50%);
+  pointer-events: none;
+}
+
+/* ============================================================
+   通用组件样式
+   ============================================================ */
+
+/* —— 战斗按钮（橙色 CTA） —— */
+.btn-battle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 14px 30px;
+  min-height: 64px;
+  font-family: var(--ff-zh);
+  font-size: var(--fs-base);
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: .15em;
+  background: linear-gradient(180deg, var(--c-orange) 0%, var(--c-orange-deep) 100%);
+  border: none;
+  border-radius: var(--r-md);
+  box-shadow:
+    0 6px 0 #8c2c0e,
+    0 12px 24px rgba(255, 106, 61, .45),
+    inset 0 1px 0 rgba(255,255,255,.4);
+  transition: transform var(--t-fast) var(--ease),
+              box-shadow var(--t-fast) var(--ease);
+  text-shadow: 0 2px 0 rgba(0,0,0,.35);
+}
+.btn-battle:hover { transform: translateY(-2px); }
+.btn-battle:active {
+  transform: translateY(4px);
+  box-shadow: 0 2px 0 #8c2c0e, 0 4px 12px rgba(255,106,61,.45);
+}
+
+/* —— 关卡卡片（BOSS 入口） —— */
+.boss-card {
+  position: relative;
+  background: linear-gradient(180deg, #1A2F66 0%, #0F1E45 100%);
+  border-radius: var(--r-lg);
+  padding: 28px 24px 32px;
+  box-shadow: var(--sh-card), var(--sh-inset);
+  border: 2px solid rgba(0, 194, 255, .55);
+  clip-path: polygon(
+    0 18px, 18px 0,
+    calc(100% - 18px) 0, 100% 18px,
+    100% calc(100% - 18px), calc(100% - 18px) 100%,
+    18px 100%, 0 calc(100% - 18px)
+  );
+}
+.boss-card::before {
+  /* 编号丝带 */
+  content: attr(data-no);
+  position: absolute;
+  top: -2px; left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, var(--c-cyan), #0089b3);
+  color: #fff;
+  font-family: var(--ff-tactical);
+  font-size: 36px;
+  font-weight: 900;
+  letter-spacing: .15em;
+  padding: 6px 22px 8px;
+  border-radius: 0 0 14px 14px;
+  box-shadow: 0 6px 14px rgba(0,194,255,.5);
+}
+
+/* —— HP 条 —— */
+.hpbar {
+  position: relative;
+  height: 28px;
+  background: rgba(0, 30, 70, .85);
+  border: 2px solid var(--c-cyan);
+  border-radius: var(--r-pill);
+  overflow: hidden;
+  box-shadow: 0 0 12px rgba(0, 194, 255, .45), inset 0 0 8px rgba(0,0,0,.6);
+}
+.hpbar > .fill {
+  position: absolute; top: 0; left: 0; bottom: 0;
+  background: linear-gradient(90deg, #00b6ff, #79e3ff);
+  box-shadow: 0 0 18px rgba(0, 194, 255, .8);
+  transition: width var(--t-slow) var(--ease);
+}
+.hpbar.is-enemy { border-color: var(--c-danger); box-shadow: 0 0 12px rgba(255,61,110,.45), inset 0 0 8px rgba(0,0,0,.6); }
+.hpbar.is-enemy > .fill { background: linear-gradient(90deg, #ff3d6e, #ff8aa6); box-shadow: 0 0 18px rgba(255,61,110,.7); }
+
+/* —— 段位徽章 —— */
+.rank-badge {
+  position: relative;
+  width: 220px;
+  padding: 18px 16px 22px;
+  text-align: center;
+  background: linear-gradient(180deg, #1A2F66 0%, #0F1E45 100%);
+  border: 2px solid rgba(184, 196, 221, .35);
+  border-radius: var(--r-md);
+  clip-path: polygon(
+    0 14px, 14px 0,
+    calc(100% - 14px) 0, 100% 14px,
+    100% calc(100% - 14px), calc(100% - 14px) 100%,
+    14px 100%, 0 calc(100% - 14px)
+  );
+}
+.rank-badge[data-state="locked"] { filter: grayscale(.55) brightness(.65); }
+.rank-badge[data-state="unlocked"] { border-color: var(--c-gold); box-shadow: var(--line-gold); }
+
+/* —— 锚定老师工具条留白 —— */
+.has-toolbar { padding-top: 96px; }
+
+/* —— 屏幕震动 / 弹回（不二元判错的视觉反馈） —— */
+@keyframes nudge-back {
+  0%   { transform: translate(var(--from-x, 0), var(--from-y, 0)) scale(1); }
+  60%  { transform: translate(0,0) scale(1.04); }
+  100% { transform: translate(0,0) scale(1); }
+}
+.is-bounce { animation: nudge-back 480ms var(--ease); }
+
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: var(--line-cyan); }
+  50%      { box-shadow: 0 0 0 2px var(--c-cyan), 0 0 36px rgba(0,194,255,.85); }
+}
+.is-pulse { animation: glow-pulse 1.6s ease-in-out infinite; }
+
+@keyframes flash-gold {
+  0%   { box-shadow: 0 0 0 0 rgba(255, 215, 0, .9); }
+  100% { box-shadow: 0 0 0 32px rgba(255, 215, 0, 0); }
+}
+.is-flash-gold { animation: flash-gold 600ms var(--ease) both; }
+
+/* —— 工具：投影场可读性微调 —— */
+.t-tactical { font-family: var(--ff-tactical); letter-spacing: .15em; font-weight: 900; }
+.t-uppercase { text-transform: uppercase; }
+.t-glow-cyan { color: var(--c-cyan); text-shadow: 0 0 14px rgba(0, 194, 255, .8); }
+.t-glow-gold { color: var(--c-gold); text-shadow: 0 0 14px rgba(255, 215, 0, .8); }
+.t-glow-yellow { color: var(--c-yellow); text-shadow: 0 0 14px rgba(255, 217, 61, .9); }
+
+/* —— 通用辅助 —— */
+.center-stage {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  min-height: 100vh;
+}
+.row { display: flex; align-items: center; }
+.col { display: flex; flex-direction: column; }
+.gap-12 { gap: 12px; } .gap-20 { gap: 20px; } .gap-32 { gap: 32px; } .gap-48 { gap: 48px; }
+.hidden { display: none !important; }
+
+/* —— 防止用户在课堂上选中拖动文字 —— */
+.no-select { user-select: none; -webkit-user-select: none; }

@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 360 460" role="img" aria-label="啰嗦魔王">
+  <defs>
+    <radialGradient id="verbBody" cx="50%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#FFD06A"/>
+      <stop offset="60%" stop-color="#C75500"/>
+      <stop offset="100%" stop-color="#5C2300"/>
+    </radialGradient>
+    <radialGradient id="verbAura" cx="50%" cy="55%" r="55%">
+      <stop offset="0%" stop-color="rgba(255,180,80,.55)"/>
+      <stop offset="60%" stop-color="rgba(199,85,0,.18)"/>
+      <stop offset="100%" stop-color="rgba(199,85,0,0)"/>
+    </radialGradient>
+    <filter id="verbGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="2.8" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <ellipse cx="180" cy="240" rx="170" ry="190" fill="url(#verbAura)"/>
+
+  <!-- floating speech-bubble blob body -->
+  <path d="M100 180
+           C 80 130, 280 130, 270 200
+           L 290 260
+           C 290 360, 200 400, 180 400
+           L 165 430 L 155 400
+           C 100 380, 70 280, 100 180 Z"
+        fill="url(#verbBody)" stroke="#3a1100" stroke-width="3"/>
+
+  <!-- multiple mouths (chatter) -->
+  <g fill="#3a1100">
+    <ellipse cx="155" cy="200" rx="8" ry="5"/>
+    <ellipse cx="200" cy="195" rx="8" ry="5"/>
+    <ellipse cx="180" cy="240" rx="14" ry="6"/>
+    <ellipse cx="230" cy="245" rx="7" ry="4"/>
+    <ellipse cx="135" cy="260" rx="7" ry="4"/>
+  </g>
+
+  <!-- eyes -->
+  <circle cx="150" cy="170" r="13" fill="#FFFFFF" stroke="#3a1100" stroke-width="2"/>
+  <circle cx="210" cy="170" r="13" fill="#FFFFFF" stroke="#3a1100" stroke-width="2"/>
+  <circle cx="152" cy="173" r="6" fill="#3a1100"/>
+  <circle cx="212" cy="173" r="6" fill="#3a1100"/>
+  <circle cx="153" cy="171" r="2" fill="#FFFFFF"/>
+  <circle cx="213" cy="171" r="2" fill="#FFFFFF"/>
+
+  <!-- floating word bubbles -->
+  <g fill="#FFE873" stroke="#3a1100" stroke-width="2" filter="url(#verbGlow)">
+    <ellipse cx="60" cy="140" rx="22" ry="14"/>
+    <ellipse cx="305" cy="155" rx="20" ry="13"/>
+    <ellipse cx="40" cy="320" rx="18" ry="12"/>
+    <ellipse cx="320" cy="330" rx="22" ry="14"/>
+  </g>
+  <g fill="#3a1100" font-family="sans-serif" font-weight="900" font-size="14" text-anchor="middle">
+    <text x="60" y="146">啰</text>
+    <text x="305" y="161">嗦</text>
+    <text x="40" y="326">废</text>
+    <text x="320" y="336">话</text>
+  </g>
+
+  <!-- arms -->
+  <g stroke="#3a1100" stroke-width="3" fill="#A04200">
+    <path d="M105 280 C 70 310, 65 360, 85 390 L 110 380 C 100 350, 105 320, 125 300 Z"/>
+    <path d="M255 280 C 290 310, 295 360, 275 390 L 250 380 C 260 350, 255 320, 235 300 Z"/>
+  </g>
+</svg>
